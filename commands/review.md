@@ -29,7 +29,7 @@ Review orchestrator. Find completed but unreviewed tasks in a design doc and run
    **Stage 1 — Spec compliance:**
    ```
    Task(general-purpose, model: opus):
-     Read `.claude/skills/project-orchestrator:spec-reviewer/SKILL.md` or invoke `project-orchestrator:spec-reviewer` skill.
+     Read ~/project-orchestrator/skills/spec-reviewer/SKILL.md
      Task spec: {full task description}
      Implementer report: {from Implementation Log}
      Living state doc: {path}
@@ -38,7 +38,7 @@ Review orchestrator. Find completed but unreviewed tasks in a design doc and run
    **Stage 2 — Code quality** (only if spec passes):
    ```
    Task(feature-dev:code-reviewer, model: opus):
-     Read `.claude/skills/project-orchestrator:quality-reviewer/SKILL.md` or invoke `project-orchestrator:quality-reviewer` skill.
+     Read ~/project-orchestrator/skills/quality-reviewer/SKILL.md
      Task: {title}
      What was implemented: {from report}
      Plan: {path}
