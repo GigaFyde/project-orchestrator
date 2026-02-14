@@ -75,11 +75,11 @@ When status changes (standard structure), move the file to the matching director
 
 ## Implementation Tasks
 
-| # | Task | Status | Assignee | Spec | Quality |
-|---|------|--------|----------|------|---------|
-| 1 | ... | pending | — | — | — |
-| 2 | ... | in-progress | implement-auth | — | — |
-| 3 | ... | complete | implement-api | ✅ | ✅ |
+| # | Task | Service | Status | Assignee | Spec | Quality |
+|---|------|---------|--------|----------|------|---------|
+| 1 | ... | backend | pending | — | — | — |
+| 2 | ... | frontend | in-progress | implement-auth | — | — |
+| 3 | ... | backend | complete | implement-api | ✅ | ✅ |
 
 ## Implementation Log
 
