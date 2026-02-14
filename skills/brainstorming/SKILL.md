@@ -17,20 +17,25 @@ Turn feature ideas into designs and implementations. Full lifecycle in one skill
 Before anything else, load project config:
 
 1. Check if `.claude/project.yml` exists
-2. If yes: parse and extract `services`, `plans_dir`, `plans_structure`, `architecture_docs`, `implementation`
+2. If yes: parse and extract `services`, `plans_dir`, `plans_structure`, `architecture_docs`, `implementation`, `models`, `brainstorm`
 3. If no: use defaults (monorepo, single service at root, `docs/plans/` flat structure)
 4. Read architecture docs if paths configured: `config.architecture_docs.agent`, `config.architecture_docs.domain`
 5. If architecture docs don't exist, skip — proceed without system topology context
+
+**Config validation:**
+- `brainstorm.default_depth` must be `shallow`, `medium`, or `deep` — error otherwise
+- `models.explorer` and `models.implementer` must be `opus`, `sonnet`, or `haiku`
+- Warning (not error) if `brainstorm.perspective_docs` key not in `brainstorm.designer_perspectives`
 
 ## Agent Preferences
 
 | Role | Model | Type | Notes |
 |------|-------|------|-------|
-| Explorers | Opus | explorer agent (brainstorm team) | One per service, report to lead only |
-| Designers | Opus | Team member (brainstorm team) | Always 2: "simplicity" + "scalability" |
-| Implementers | Opus | implementer agent (implement team) | Max `config.implementation.max_parallel` (default 3) parallel |
-| Spec reviewer | Opus | Fresh Task agent (general-purpose) | One-shot per task, invoke `project-orchestrator:spec-reviewer` skill |
-| Quality reviewer | Opus | Fresh Task agent (feature-dev:code-reviewer) | One-shot per task, invoke `project-orchestrator:quality-reviewer` skill |
+| Explorers | `config.models.explorer` (default: sonnet) | explorer agent (brainstorm team) | One per service, report to lead only |
+| Designers | Opus | Team member (brainstorm team) | From `config.brainstorm.designer_perspectives` (default: ["simplicity", "scalability"]) |
+| Implementers | `config.models.implementer` (default: opus) | implementer agent (implement team) | Max `config.implementation.max_parallel` (default 3) parallel |
+| Spec reviewer | Per `config.review.strategy` | spec-reviewer agent | One-shot per task, `Read ~/project-orchestrator/skills/spec-reviewer/SKILL.md` |
+| Quality reviewer | Per `config.review.strategy` | quality-reviewer agent | One-shot per task, `Read ~/project-orchestrator/skills/quality-reviewer/SKILL.md` |
 
 - **Never run agents in background** — always foreground
 - **Team naming:** `brainstorm-{feature-slug}` / `implement-{feature-slug}`
@@ -118,12 +123,14 @@ Which service(s) does this affect? Present the list from `config.services[].name
 - [ ] Medium: Explore 1 service directory patterns → typical features
 - [ ] Deep: Multiple service exploration, existing impl review → cross-cutting changes
 
+Default: `config.brainstorm.default_depth` (default: `medium`). User can always override.
+
 ## 5. Team decision
 
 ```
 services <= 2 AND depth = shallow → NO TEAM (regular Task agents)
 services <= 2 AND depth = medium  → NO TEAM (regular Task agents)
-services >= 3 OR depth = deep     → TEAM (brainstorm-{slug})
+services >= config.brainstorm.team_threshold (default: 3) OR depth = deep → TEAM (brainstorm-{slug})
 ```
 
 ## 6a. Team exploration (when team triggered)
@@ -167,9 +174,11 @@ Lead synthesizes after all explorers report:
 
 ## 8. Multi-perspective design
 
-**Team path:** Spawn 2 design agents (opus) as team members:
-- **"simplicity"** — minimize changes, reuse existing code, smallest diff
-- **"scalability"** — optimize for growth, caching, async patterns
+**Team path:** Spawn design agents (opus) as team members — one per perspective from `config.brainstorm.designer_perspectives` (default: `["simplicity", "scalability"]`):
+
+For each perspective:
+- If `config.brainstorm.perspective_docs` has a mapping for this perspective name, `Read` the mapped file and inject its content into the designer agent's prompt
+- If no mapping exists, spawn with perspective name only (no doc injection — not an error)
 
 Each produces a proposal via TaskUpdate. Lead synthesizes one recommendation.
 

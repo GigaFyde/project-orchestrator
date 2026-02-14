@@ -14,6 +14,8 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 <process>
 1. **Load project config** from `.claude/project.yml` (defaults if missing)
+   - Extract `models.implementer` (default: opus) for spawning implementer agents
+   - Extract `review.strategy`, `review.parallel_models`, `review.single_model` for auto-review
 2. Read architecture docs if configured
 
 3. **Check for handoff and saved state (Dev-MCP)**
@@ -49,7 +51,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
      - c) **Git worktrees** — give each agent its own worktree, merge after
    - For each wave (up to `config.implementation.max_parallel` tasks, default 3):
      ```
-     Task(implementer, team_name: "implement-{slug}", name: "implement-{task-slug}")
+     Task(implementer, model: config.models.implementer (default: opus), team_name: "implement-{slug}", name: "implement-{task-slug}")
      Prompt:
        Your task: Task {N} — {title}
        Living state doc: {path to design doc}
@@ -60,14 +62,15 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 8. **Handle task completion** — when an implementer reports via SendMessage:
    - a) Update living state doc — mark task status, log implementer report
-   - b) If auto-review enabled:
-     - Spawn spec reviewer (fresh Task agent, general-purpose, opus) → `project-orchestrator:spec-reviewer` skill
-     - If spec passes → spawn quality reviewer (fresh Task, feature-dev:code-reviewer, opus) → `project-orchestrator:quality-reviewer` skill
+   - b) If auto-review enabled (follows same strategy as `/project:review`):
+     - When `config.review.strategy: parallel` (default): spawn 2 spec-reviewer agents with `config.review.parallel_models` models, merge findings
+     - When `config.review.strategy: single`: spawn 1 spec-reviewer agent with `config.review.single_model`
+     - If spec passes → same pattern for quality-reviewer agents
      - If review finds issues → SendMessage to implementer with specific fixes → re-review after fix
    - c) Update living state doc with review results
 
 9. **Completion**
-   - Run a final whole-implementation code review (fresh Task, feature-dev:code-reviewer)
+   - Run a final whole-implementation code review (fresh Task, quality-reviewer, model per config.review.strategy)
    - Delete scope file (MCP `delete_scope` or skip)
    - TeamDelete("implement-{slug}")
    - Update living state doc status to "complete"
