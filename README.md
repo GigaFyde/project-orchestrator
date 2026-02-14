@@ -66,6 +66,25 @@ services:
 implementation:
   auto_review: true          # --no-review flag overrides (default: true)
   max_parallel: 3            # max parallel implementer agents (default: 3)
+
+# Model assignments per role
+models:
+  explorer: sonnet           # default: sonnet (read-only exploration)
+  implementer: opus          # default: opus (code generation)
+
+# Review configuration
+review:
+  strategy: parallel         # parallel | single (default: parallel)
+  parallel_models: [haiku, sonnet]  # 2 models for parallel review (default: [haiku, sonnet])
+  single_model: opus         # model for single review (default: opus)
+
+# Brainstorm behavior
+brainstorm:
+  default_depth: medium      # shallow | medium | deep (default: medium)
+  team_threshold: 3          # auto-team when >= N services (default: 3)
+  designer_perspectives: [simplicity, scalability]  # default perspectives
+  perspective_docs:          # optional: map perspective names to doc files
+    # reactive-safety: path/to/doc.md
 ```
 
 ### Config Validation
@@ -80,6 +99,35 @@ implementation:
 | Missing `changelog` for a service | Skip changelog step for that service |
 | Missing `branch` for a service | Default to `main` |
 | Missing `remote` for a service | Default to `true` |
+| `review.parallel_models` not exactly 2 entries | Error: "parallel_models requires exactly 2 models (e.g., [haiku, sonnet])" |
+| `review.strategy` not `parallel` or `single` | Error: "review.strategy must be 'parallel' or 'single'" |
+| `brainstorm.default_depth` not `shallow`/`medium`/`deep` | Error: "brainstorm.default_depth must be 'shallow', 'medium', or 'deep'" |
+| `models.*` not `opus`/`sonnet`/`haiku` | Error: "Model must be 'opus', 'sonnet', or 'haiku'" |
+| `brainstorm.perspective_docs` key not in `designer_perspectives` | Warning (not error): key will be ignored |
+
+### Defaults
+
+| Key | Default | Rationale |
+|-----|---------|-----------|
+| `implementation.auto_review` | `true` | Review by default |
+| `implementation.max_parallel` | `3` | Reasonable parallelism |
+| `models.explorer` | `sonnet` | Read-only, cost-effective |
+| `models.implementer` | `opus` | Code generation needs highest quality |
+| `review.strategy` | `parallel` | Model diversity catches more bugs |
+| `review.parallel_models` | `[haiku, sonnet]` | Fast + thorough combination |
+| `review.single_model` | `opus` | Best single model for reviews |
+| `brainstorm.default_depth` | `medium` | Safe middle ground |
+| `brainstorm.team_threshold` | `3` | Teams for 3+ services |
+| `brainstorm.designer_perspectives` | `[simplicity, scalability]` | Balanced design trade-offs |
+| `brainstorm.perspective_docs` | `{}` (empty) | Optional doc injection |
+
+### Model Precedence
+
+- `models.explorer` → used when spawning explorer agents
+- `models.implementer` → used when spawning implementer agents
+- `review.strategy` + `review.parallel_models` / `review.single_model` → controls reviewer models
+- Review config is separate from role models — `models.*` does NOT control reviewers
+- Agent `.md` files have static `model:` defaults in frontmatter — the Task tool's `model:` parameter overrides when provided via config
 
 ### No Config (Zero-Config Mode)
 
@@ -105,8 +153,10 @@ Every skill/command begins with:
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `implementer` | Implements tasks from design docs | opus |
-| `explorer` | Read-only codebase exploration | sonnet |
+| `implementer` | Implements tasks from design docs | `config.models.implementer` (default: opus) |
+| `explorer` | Read-only codebase exploration | `config.models.explorer` (default: sonnet) |
+| `spec-reviewer` | Reviews implementation against task spec | Per `config.review.strategy` |
+| `quality-reviewer` | Reviews code quality after spec passes | Per `config.review.strategy` |
 
 ## Lifecycle Flow
 
