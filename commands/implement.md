@@ -31,6 +31,23 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 5. **Parse the design doc** — extract feature name/slug, implementation tasks, dependencies, current status
 
+5.5. **Check for overlapping active plans**
+   - Check if current design doc already has a `## Worktree` / `## Worktrees` section
+     - If yes: reuse existing worktree(s)
+       - Verify they exist on disk via `git worktree list`
+       - If missing: run `git worktree prune`, then recreate via `project-orchestrator:worktree` skill
+       - Verify correct branch: `cd {worktree} && git branch --show-current` should match the branch in the design doc
+       - If wrong branch: warn user, don't silently proceed
+   - If no existing worktree section: scan `{config.plans_dir}/` for other `*-design.md` with status `implementing`
+     - Extract `Services Affected` list from each
+     - Intersect with current plan's services
+     - If overlap found:
+       - Tell user which plan overlaps and on which services
+       - Offer worktree isolation
+       - If accepted: invoke `project-orchestrator:worktree` skill, record absolute path(s) in design doc
+       - If declined: proceed without worktree (user accepts collision risk)
+   - Store worktree info (path or service→path map) for use in step 7
+
 5a. **Check for `--no-review` flag** — if present, skip auto-review after task completion. Default: `config.implementation.auto_review` (default true).
 
 6. **Create implementation team**
@@ -49,13 +66,22 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
      - a) **Sequence them** — put colliding tasks in separate waves (safest)
      - b) **Component-first isolation** — each agent builds standalone files, then integration task wires them in
      - c) **Git worktrees** — give each agent its own worktree, merge after
+   - **Task-service mapping (for worktree routing):** For each task, look up the `Service` column in the design doc's task table. If a `## Worktrees` table exists (polyrepo), find the matching service row to get the worktree path. If `## Worktree` exists (monorepo), use the single worktree path. If no worktree section exists, use the project root or service path.
    - For each wave (up to `config.implementation.max_parallel` tasks, default 3):
      ```
      Task(implementer, model: config.models.implementer (default: opus), team_name: "implement-{slug}", name: "implement-{task-slug}")
-     Prompt:
+     Prompt (monorepo):
        Your task: Task {N} — {title}
        Living state doc: {path to design doc}
-       Read the living state doc for full design context, then implement your assigned task.
+       Working directory: {absolute worktree path or project root}
+       Read the living state doc, then cd into the working directory and implement your task.
+
+     Prompt (polyrepo):
+       Your task: Task {N} — {title}
+       Living state doc: {path to design doc}
+       Service: {service name}
+       Working directory: {absolute worktree path for this service, or service path}
+       Read the living state doc, then cd into the working directory and implement your task.
      ```
    - Update living state doc: mark task as `in-progress`, set assignee
    - Wait for each wave to complete before starting the next
