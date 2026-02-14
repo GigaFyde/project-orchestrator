@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:brainstorming
 description: "Use this before any feature work. Full lifecycle: brainstorm, design, implement with parallel Teams, two-stage review, and compaction-safe state on disk."
+user-invocable: false
 ---
 
 # Feature Lifecycle
@@ -235,37 +236,7 @@ agent_handoff(
 
 ---
 
-# Phase 2: Implementation (via `/project:implement` command)
-
-> **Note:** The implementation phase is now orchestrated by the `/project:implement` command. The details below are kept as reference for agent-only contexts.
-
-## 12-13. Team setup and parallel implementation
-
-The `/project:implement` command handles:
-- Reading the living state doc
-- Creating `implement-{slug}` team
-- Creating scope files for auto-approve hooks (optional, via MCP)
-- Spawning parallel implementers (implementer agent) per wave
-- Updating the living state doc throughout
-
-## 14. Two-stage review
-
-The `/project:implement` command auto-reviews by default (disable with `--no-review`):
-- **Spec review:** fresh Task agent → `project-orchestrator:spec-reviewer` skill
-- **Quality review:** fresh Task agent (feature-dev:code-reviewer) → `project-orchestrator:quality-reviewer` skill
-- Issues → sent back to implementer for fixes
-
-Manual review is also available via `/project:review`.
-
-## 15. Completion
-
-When all tasks complete:
-- Final code review → `TeamDelete` → update living state doc
-- Suggest user run `/project:verify` then `/project:finish`
-
-## 16. Changelog
-
-- Suggest user run `/project:changelog` for each affected service
+**Implementation is handled by `/project:implement`. See that command for details.**
 
 ---
 
