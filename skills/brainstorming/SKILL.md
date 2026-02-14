@@ -17,7 +17,7 @@ Turn feature ideas into designs and implementations. Full lifecycle in one skill
 Before anything else, load project config:
 
 1. Check if `.claude/project.yml` exists
-2. If yes: parse and extract `services`, `plans_dir`, `plans_structure`, `architecture_docs`, `implementation`, `models`, `brainstorm`
+2. If yes: parse and extract `services`, `plans_dir`, `plans_structure`, `architecture_docs`, `implementation`, `models`, `brainstorm`, `review`
 3. If no: use defaults (monorepo, single service at root, `docs/plans/` flat structure)
 4. Read architecture docs if paths configured: `config.architecture_docs.agent`, `config.architecture_docs.domain`
 5. If architecture docs don't exist, skip — proceed without system topology context
@@ -26,6 +26,17 @@ Before anything else, load project config:
 - `brainstorm.default_depth` must be `shallow`, `medium`, or `deep` — error otherwise
 - `models.explorer` and `models.implementer` must be `opus`, `sonnet`, or `haiku`
 - Warning (not error) if `brainstorm.perspective_docs` key not in `brainstorm.designer_perspectives`
+- `review.max_fix_iterations` must be 1-5 — error: "max_fix_iterations must be 1-5"
+- `review.fix_timeout_turns` must be 5-30 — error: "fix_timeout_turns must be 5-30"
+
+**Review config defaults (v2):**
+| Key | Default | Description |
+|-----|---------|-------------|
+| `review.speculative_quality` | `true` | Run quality in parallel with spec on first review |
+| `review.max_fix_iterations` | `2` | Max fix attempts before human escalation |
+| `review.fix_timeout_turns` | `10` | Max agent turns per fix attempt |
+| `review.auto_approve` | `false` | Auto-approve high-confidence passes |
+| `review.auto_reject` | `false` | Auto-send-to-implementer high-confidence failures |
 
 ## Agent Preferences
 
@@ -75,11 +86,11 @@ When status changes (standard structure), move the file to the matching director
 
 ## Implementation Tasks
 
-| # | Task | Service | Status | Assignee | Spec | Quality |
-|---|------|---------|--------|----------|------|---------|
-| 1 | ... | backend | pending | — | — | — |
-| 2 | ... | frontend | in-progress | implement-auth | — | — |
-| 3 | ... | backend | complete | implement-api | ✅ | ✅ |
+| # | Task | Service | Status | Assignee | Spec | Quality | Fix Iterations |
+|---|------|---------|--------|----------|------|---------|----------------|
+| 1 | ... | backend | pending | — | — | — | — |
+| 2 | ... | frontend | in-progress | implement-auth | — | — | — |
+| 3 | ... | backend | complete | implement-api | ✅ | ✅ | 0 |
 
 ## Implementation Log
 

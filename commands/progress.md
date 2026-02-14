@@ -46,7 +46,26 @@ Status checker and router. Query feature status from design docs, report progres
    - ...
    ```
 
-8. **Suggest next action** (same logic as below)
+8. **Check for review analytics** — read `.claude/review-analytics.json` at the consumer project root
+   - If the file does not exist → skip this section silently (no error, no message)
+   - If it exists, parse the `summary` object and append to the report:
+     ```
+     Review Analytics:
+       Total reviews: {summary.total_reviews} | Auto-approved: {summary.auto_approved} | Auto-rejected: {summary.auto_rejected} | Human-decided: {summary.human_decided}
+       Avg fix iterations: {summary.avg_fix_iterations}
+
+       Model Accuracy:
+         {model}: TP {true_positive} | FP {false_positive} | Missed {missed}
+         {model}: TP {true_positive} | FP {false_positive} | Missed {missed}
+
+       Service Issues:
+         {service} ({reviews} reviews): {common_issues joined by ", "}
+         {service} ({reviews} reviews): {common_issues joined by ", "}
+     ```
+   - Only show "Model Accuracy" subsection if `summary.model_accuracy` exists and has entries
+   - Only show "Service Issues" subsection if `summary.by_service` exists and has entries
+
+9. **Suggest next action** (same logic as below)
 
 ## Fallback: Manual approach (if MCP unavailable)
 
@@ -73,7 +92,26 @@ Status checker and router. Query feature status from design docs, report progres
    Tasks: {pending} pending | {in-progress} in-progress | {complete} complete | {reviewed} reviewed
    ```
 
-5. **Suggest next action**
+5. **Check for review analytics** — read `.claude/review-analytics.json` at the consumer project root
+   - If the file does not exist → skip this section silently (no error, no message)
+   - If it exists, parse the `summary` object and append to the report:
+     ```
+     Review Analytics:
+       Total reviews: {summary.total_reviews} | Auto-approved: {summary.auto_approved} | Auto-rejected: {summary.auto_rejected} | Human-decided: {summary.human_decided}
+       Avg fix iterations: {summary.avg_fix_iterations}
+
+       Model Accuracy:
+         {model}: TP {true_positive} | FP {false_positive} | Missed {missed}
+         {model}: TP {true_positive} | FP {false_positive} | Missed {missed}
+
+       Service Issues:
+         {service} ({reviews} reviews): {common_issues joined by ", "}
+         {service} ({reviews} reviews): {common_issues joined by ", "}
+     ```
+   - Only show "Model Accuracy" subsection if `summary.model_accuracy` exists and has entries
+   - Only show "Service Issues" subsection if `summary.by_service` exists and has entries
+
+6. **Suggest next action**
 
 ## Next Action Logic
 
@@ -93,5 +131,6 @@ Status checker and router. Query feature status from design docs, report progres
 - [ ] MCP tools called first (graceful fallback to manual parsing)
 - [ ] Status reported with task counts
 - [ ] Recent activity shown (MCP path only)
+- [ ] Review analytics summary shown if `.claude/review-analytics.json` exists (silently skipped if missing)
 - [ ] Next action suggested based on current state
 </success_criteria>

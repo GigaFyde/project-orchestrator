@@ -78,6 +78,13 @@ review:
   parallel_models: [haiku, sonnet]  # 2 models for parallel review (default: [haiku, sonnet])
   single_model: opus         # model for single review (default: opus)
 
+  # Review System v2
+  speculative_quality: true  # run quality in parallel with spec on first review (default: true)
+  max_fix_iterations: 2      # max fix attempts before human escalation (default: 2, valid: 1-5)
+  fix_timeout_turns: 10      # max agent turns per fix attempt (default: 10, valid: 5-30)
+  auto_approve: false        # auto-approve high-confidence passes (default: false)
+  auto_reject: false         # auto-send-to-implementer high-confidence failures (default: false)
+
 # Brainstorm behavior
 brainstorm:
   default_depth: medium      # shallow | medium | deep (default: medium)
@@ -103,6 +110,8 @@ brainstorm:
 | `review.strategy` not `parallel` or `single` | Error: "review.strategy must be 'parallel' or 'single'" |
 | `brainstorm.default_depth` not `shallow`/`medium`/`deep` | Error: "brainstorm.default_depth must be 'shallow', 'medium', or 'deep'" |
 | `models.*` not `opus`/`sonnet`/`haiku` | Error: "Model must be 'opus', 'sonnet', or 'haiku'" |
+| `review.max_fix_iterations` not 1-5 | Error: "max_fix_iterations must be 1-5" |
+| `review.fix_timeout_turns` not 5-30 | Error: "fix_timeout_turns must be 5-30" |
 | `brainstorm.perspective_docs` key not in `designer_perspectives` | Warning (not error): key will be ignored |
 
 ### Defaults
@@ -116,6 +125,11 @@ brainstorm:
 | `review.strategy` | `parallel` | Model diversity catches more bugs |
 | `review.parallel_models` | `[haiku, sonnet]` | Fast + thorough combination |
 | `review.single_model` | `opus` | Best single model for reviews |
+| `review.speculative_quality` | `true` | Saves one review cycle on passing tasks |
+| `review.max_fix_iterations` | `2` | Enough for quick fixes, escalates real issues |
+| `review.fix_timeout_turns` | `10` | Prevents infinite agent loops |
+| `review.auto_approve` | `false` | Conservative — human reviews all until confidence builds |
+| `review.auto_reject` | `false` | Conservative — human confirms before sending back |
 | `brainstorm.default_depth` | `medium` | Safe middle ground |
 | `brainstorm.team_threshold` | `3` | Teams for 3+ services |
 | `brainstorm.designer_perspectives` | `[simplicity, scalability]` | Balanced design trade-offs |
@@ -190,3 +204,153 @@ To set up auto-approve hooks for your project, configure:
 1. A PreToolUse hook that reads scope files
 2. Scope files at `.claude/hooks/scopes/{team}.json`
 3. An MCP tool or manual process to create/delete scope files per implementation wave
+
+## Review System v2
+
+The review system includes speculative parallel execution, confidence-based auto-decisions, a fix iteration loop, review memory, and analytics tracking.
+
+### Speculative Parallel Review
+
+On the **first review** of each task, all reviewers run in parallel to save wall-clock time:
+
+```
+Parallel strategy (4 reviewers):
+  Spec-reviewer (haiku)     ─┐
+  Spec-reviewer (sonnet)    ─┤ All 4 in parallel
+  Quality-reviewer (haiku)  ─┤
+  Quality-reviewer (sonnet) ─┘
+
+Single strategy (2 reviewers):
+  Spec-reviewer (opus)      ─┐ Both in parallel
+  Quality-reviewer (opus)   ─┘
+```
+
+After all complete, findings are merged:
+1. Merge spec findings (across models) and decide spec verdict
+2. If spec **passes** -- merge quality findings and decide overall verdict
+3. If spec **fails** -- discard quality results (they reviewed against a non-compliant implementation)
+
+Quality results are "speculative" because most tasks pass spec review. The cost of discarding quality results on spec failure is negligible compared to the time saved.
+
+On **fix iterations** (2nd+ review), spec runs first (sequential), then quality only if spec passes. No speculative quality run on retries.
+
+Control this with `review.speculative_quality` (default: `true`). Set to `false` to always run spec before quality sequentially.
+
+### Confidence Scoring and Auto-Decisions
+
+Each review result is assigned a confidence level based on model agreement:
+
+| Scenario | Confidence | Auto-Action |
+|----------|------------|-------------|
+| Both models PASS (spec+quality), zero findings | Very High (1.0) | Auto-approve |
+| Both models PASS, minor-only findings | High (0.85) | Auto-approve with notes |
+| Both models FAIL, agreed critical issues | High (0.9) | Auto-reject to fix loop |
+| One model PASS, one FAIL | Low (0.4) | Human decides |
+| Both FAIL but disagree on which issues | Medium (0.6) | Human decides |
+| Stronger model found critical issue alone | Medium (0.7) | Human decides |
+
+Auto-decisions are controlled by two independent config keys:
+- `review.auto_approve: true` -- auto-approve when both models pass with no critical/important findings
+- `review.auto_reject: true` -- auto-send to implementer when both models agree on critical issues
+
+Both default to `false` (conservative). When disabled, all results are presented to the human for decision.
+
+### Fix Iteration Loop
+
+When a review finds critical issues, the task enters a fix loop:
+
+1. Review findings are sent to the implementer with specific file:line references
+2. Implementer fixes the issues (bounded by `review.fix_timeout_turns` agent turns)
+3. Task is re-reviewed (spec-only first, then quality if spec passes)
+4. If the task passes, it is marked reviewed
+5. If it fails again, repeat up to `review.max_fix_iterations` times
+6. If max iterations reached, **escalate to human** -- implementation pauses for that task and dependent tasks are not started
+
+**Task status values during the fix loop:**
+- `review-fix-{N}` -- currently in fix iteration N (e.g., `review-fix-1`)
+- `escalated` -- failed review after max fix attempts, waiting for human intervention
+
+Minor-only findings (no critical or important issues) do not block -- the task is approved with notes.
+
+### Review Memory
+
+Reviewers maintain structured memory that improves review quality over time. Memory is stored per-service at `.claude/agent-memory/project-orchestrator-{type}/`:
+
+```
+MEMORY.md                    # index + cross-review patterns
+reviews/
+  {date}-{slug}.md           # per-review findings
+service-patterns/
+  {service}.md               # per-service issue patterns
+```
+
+**Per-service pattern files** track:
+- **Common issues** -- recurring patterns with frequency, severity, and examples
+- **Service-specific rules** -- conventions learned from past reviews (e.g., "uses reactive patterns, always check schedulers")
+- **False positives** -- patterns that look like issues but are valid per project conventions
+
+**How memory is used:**
+1. Before reviewing, the reviewer reads service patterns for the target service
+2. Known issue patterns are weighted higher (looked for first)
+3. Known false positives are skipped
+4. After reviewing, patterns are updated with new findings
+
+**Memory pruning:** Patterns not seen in 30+ days are moved to an archive section to keep active memory focused.
+
+### Review Analytics
+
+Review results are tracked in `.claude/review-analytics.json` at the project root. This file is append-only and records:
+
+```json
+{
+  "reviews": [
+    {
+      "date": "2026-02-14",
+      "feature": "core-standardization",
+      "task": 2,
+      "service": "toraka-core",
+      "strategy": "parallel",
+      "models": ["haiku", "sonnet"],
+      "stage": "spec",
+      "haiku_verdict": "fail",
+      "sonnet_verdict": "fail",
+      "agreed_count": 1,
+      "haiku_only_count": 0,
+      "sonnet_only_count": 2,
+      "confidence": 0.9,
+      "auto_decision": "auto_reject",
+      "human_override": null,
+      "fix_iterations": 1,
+      "final_verdict": "pass",
+      "findings": [...]
+    }
+  ],
+  "summary": {
+    "total_reviews": 12,
+    "auto_approved": 8,
+    "auto_rejected": 2,
+    "human_decided": 2,
+    "avg_fix_iterations": 0.5,
+    "model_accuracy": {
+      "haiku": { "true_positive": 15, "false_positive": 3, "missed": 5 },
+      "sonnet": { "true_positive": 20, "false_positive": 1, "missed": 2 }
+    },
+    "by_service": {
+      "toraka-core": { "reviews": 6, "common_issues": ["missing subscribeOn"] }
+    }
+  }
+}
+```
+
+**Analytics are updated:**
+- After each review merge -- append review entry with findings
+- After fix loop completes -- update `fix_iterations` and `final_verdict`
+- After human override -- update `human_override` field
+- Summary counters are recalculated on each append
+
+**Using analytics for tuning:**
+- High `model_accuracy.{model}.false_positive` -- consider switching models or strategy
+- High `avg_fix_iterations` -- reviewers may be too strict, or specs need more detail
+- High `common_issues` for a service -- add patterns to that service's CLAUDE.md
+
+The `/project:progress` command includes an analytics summary when the analytics file exists.

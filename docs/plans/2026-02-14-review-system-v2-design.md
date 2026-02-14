@@ -1,6 +1,6 @@
 # Review System v2 — Design & Implementation
 
-## Status: approved
+## Status: complete
 
 ## Design
 
@@ -417,14 +417,14 @@ When a human overrides an auto-decision (approves despite issues, or rejects des
 
 | # | Task | Status | Assignee | Spec | Quality |
 |---|------|--------|----------|------|---------|
-| 1 | Add speculative 4-parallel review + confidence scoring + auto-decision to review command (E3) | pending | — | — | — |
-| 2 | Add fix iteration loop + escalation to implement command (E1) | pending | — | — | — |
-| 3 | Add structured memory format to reviewer skills + agents (E2) | pending | — | — | — |
-| 4 | Add analytics tracking to review and implement commands (E4) | pending | — | — | — |
-| 5 | Add new config keys + validation to brainstorm skill config loading (E1+E3) | pending | — | — | — |
-| 6 | Update progress command to show analytics summary (E4) | pending | — | — | — |
-| 7 | Add Fix Iterations column to brainstorm skill task table template | pending | — | — | — |
-| 8 | Update README.md with v2 config schema and review system docs | pending | — | — | — |
+| 1 | Add speculative 4-parallel review + confidence scoring + auto-decision to review command (E3) | complete | impl-task-1 | ✅ | ✅ |
+| 2 | Add fix iteration loop + escalation to implement command (E1) | complete | impl-task-2 | ✅ | ✅ |
+| 3 | Add structured memory format to reviewer skills + agents (E2) | complete | impl-task-3 | ✅ | ✅ |
+| 4 | Add analytics tracking to review and implement commands (E4) | complete | impl-task-4 | ✅ | ✅ |
+| 5 | Add new config keys + validation to brainstorm skill config loading (E1+E3) | complete | impl-task-5 | ✅ | ✅ |
+| 6 | Update progress command to show analytics summary (E4) | complete | impl-task-6 | ✅ | ✅ |
+| 7 | Add Fix Iterations column to brainstorm skill task table template | complete | impl-task-7 | ✅ | ✅ |
+| 8 | Update README.md with v2 config schema and review system docs | complete | impl-task-8 | ✅ | ✅ |
 
 ### Dependencies
 - Tasks 1, 3, 5: independent (wave 1)

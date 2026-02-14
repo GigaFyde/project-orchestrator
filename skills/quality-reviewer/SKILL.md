@@ -107,3 +107,39 @@ Check code against the target service's CLAUDE.md for stack-specific quality pat
 - **Be specific.** Every issue needs `file:line` and a clear explanation.
 - **Critical/Important issues block approval.** Minor issues don't.
 - If the code is clean, say ✅ and move on. Don't invent issues.
+
+## Post-Review Memory Update
+
+After completing your review, update your structured memory so future reviews benefit from what you learned.
+
+1. **Read** `service-patterns/{service}.md` from your memory directory (create it if missing, using the template below)
+2. **For each finding:**
+   - If the pattern is already tracked in Common Issues: increment frequency, update `Last Seen` to today
+   - If it's a new pattern: add a row to the Common Issues table
+3. **False positive tracking:** If you flagged something and the lead dismissed it, add it to the False Positives table with an explanation of why it's not an issue
+4. **Update MEMORY.md** index with:
+   - Total review count (increment by 1)
+   - Key learnings from this review (if any new patterns discovered)
+5. **Memory pruning:** Move any Common Issues patterns not seen in 30+ days to an `## Archive` section at the bottom of the service patterns file. This keeps active memory focused on current patterns.
+
+### Service Pattern File Template
+
+If `service-patterns/{service}.md` doesn't exist, create it with this structure:
+
+```markdown
+# {Service} Review Patterns
+
+## Common Issues
+| Pattern | Frequency | Last Seen | Severity | Example |
+|---------|-----------|-----------|----------|---------|
+
+## Service-Specific Rules
+- (Add rules discovered during reviews)
+
+## False Positives to Avoid
+| Pattern | Why It's Not an Issue |
+|---------|----------------------|
+
+## Archive
+<!-- Patterns not seen in 30+ days moved here -->
+```
