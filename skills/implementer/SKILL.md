@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:implementer
 description: "Guides implementer teammates during feature development. Read living state doc, implement assigned task, test, commit, self-review, report."
+user-invocable: false
 ---
 
 # Implementer
@@ -22,7 +23,7 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
 1. Read your assigned task from the team TaskList (`TaskGet` your task ID)
 2. Read the living state doc at the path provided in your task description
 3. Check for saved progress: `load_state(prefix: "implement-{slug}-task-{N}")` — resume if found
-4. Check target service git state: `repo_status(service: <target-service>)` (fallback: `git status`)
+4. Check target service git state: `cd <service> && git status && git branch --show-current`
 5. Read architecture docs if configured in `project.yml` (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
 6. Read the target service's CLAUDE.md for stack-specific patterns and conventions
 7. If anything is unclear — **ask the lead via SendMessage before starting**
@@ -123,8 +124,7 @@ This prevents race conditions when multiple agents work on the same UI in parall
 ## Dev-MCP Coordination (when MCP tools are available)
 
 ### On Task Start
-1. `repo_status(service: <target-service>)` → verify clean git state, correct branch
-   - Fallback: `git status` + `git branch` in service dir
+1. Verify clean git state and correct branch: `cd <service> && git status && git branch --show-current`
 2. `load_state(prefix: "implement-{slug}-task-{N}")` → if resuming after compaction, restore progress
    - If found: skip already-completed steps, resume from checkpoint
    - If not found: fresh start

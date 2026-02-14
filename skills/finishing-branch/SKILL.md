@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:finishing-branch
 description: Use when implementation is complete and ready to merge/PR — handles git repos, auto-deploy awareness, multi-service PR ordering, and changelog.
+user-invocable: false
 ---
 
 # Finishing a Development Branch
@@ -27,14 +28,16 @@ Guide completion of development work.
 
 **Monorepo** (`config.structure: monorepo`): Single repo, single branch operation.
 
-### Primary: MCP-powered discovery
+### Service discovery
 
-1. Call `list_branches(pattern: "feature/*")` → aggregate feature branches across all repos
-2. Call `verify_workspace()` → find repos with dirty trees or unpushed commits
-3. For each candidate, call `repo_status(service: <name>)` → detailed branch/dirty/unpushed status
-4. Present findings to user
-
-If MCP tools are unavailable, fall back to manual git checks per service directory.
+1. Call `list_branches(pattern: "feature/*")` → aggregate feature branches across all repos (if MCP available)
+2. For each affected service, check git state manually:
+   ```bash
+   cd <service> && git branch --show-current
+   cd <service> && git status
+   cd <service> && git log --oneline -5
+   ```
+3. Present findings to user
 
 **Repeat Steps 2-5 for each affected service.**
 

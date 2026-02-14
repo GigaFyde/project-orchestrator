@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:verification
 description: Use before claiming ANY work is complete — ensures evidence-based verification across all affected services, correct git state, and deployment confirmation.
+user-invocable: false
 ---
 
 # Verification Before Completion
@@ -65,23 +66,9 @@ If API shapes changed between services:
 | Consumer expects correct shape | Read the API call site, verify it parses correctly |
 | Event payload matches | Verify publisher and consumer agree on schema |
 
-### 3. Git state verification (MCP-first)
+### 3. Git state verification
 
-**Primary — use `verify_workspace()` MCP tool:**
-```
-verify_workspace() → checks ALL repos in one call:
-  - dirty trees (uncommitted changes)
-  - branch mismatches (wrong branch for service)
-  - uncommitted work
-  - unpushed commits
-```
-
-If issues found, drill into specific services:
-```
-repo_status(service: <name>) → detailed per-service status
-```
-
-**Fallback — if MCP unavailable, use manual git commands:**
+Verify each affected service has clean git state:
 ```bash
 # Verify correct service repo and branch
 cd <service> && git branch --show-current
@@ -158,7 +145,7 @@ If you catch yourself:
 |-------|---------------|-----|
 | Tests | Each affected service | Run `config.services[name].test` or auto-detected command |
 | Contracts | Producer + consumer match | Read both sides, compare shapes |
-| Git | Correct repo, branch, clean state | `verify_workspace()` → `repo_status()` (fallback: `git branch`, `git status`) |
+| Git | Correct repo, branch, clean state | `git branch`, `git status` per service |
 | Deploy | Endpoint works | User confirms after push |
 | State doc | Updated with results | Edit `{plans_dir}/*.md`, move to `completed/` when done (standard structure) |
 
