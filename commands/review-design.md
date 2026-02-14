@@ -39,15 +39,14 @@ Design review orchestrator. Find a design doc and run two-stage review (spec com
    **When `review.strategy: parallel` (default):**
 
    **Stage 1 — Spec completeness:**
-   Spawn 2 reviewers in parallel:
+   Spawn 2 reviewers in parallel using the `design-reviewer` agent:
    ```
-   Task(design-reviewer, model: config.review.parallel_models[0]):
-     Read ~/project-orchestrator/skills/design-reviewer/SKILL.md
+   Task(subagent_type: "design-reviewer", model: config.review.parallel_models[0]):
      Design doc: {path}
      Stage: completeness
-     Files to review: {list of existing files proposed for modification}
+     Existing files to review (for integration context): {list of existing files proposed for modification}
 
-   Task(design-reviewer, model: config.review.parallel_models[1]):
+   Task(subagent_type: "design-reviewer", model: config.review.parallel_models[1]):
      (same prompt)
    ```
    **Merge findings** (lead session does this, not a separate agent):
@@ -61,13 +60,12 @@ Design review orchestrator. Find a design doc and run two-stage review (spec com
    **Stage 2 — Feasibility:**
    Spawn 2 reviewers in parallel (same pattern):
    ```
-   Task(design-reviewer, model: config.review.parallel_models[0]):
-     Read ~/project-orchestrator/skills/design-reviewer/SKILL.md
+   Task(subagent_type: "design-reviewer", model: config.review.parallel_models[0]):
      Design doc: {path}
      Stage: feasibility
-     Files to review: {list of existing files proposed for modification}
+     Existing files to review (for integration context): {list of existing files proposed for modification}
 
-   Task(design-reviewer, model: config.review.parallel_models[1]):
+   Task(subagent_type: "design-reviewer", model: config.review.parallel_models[1]):
      (same prompt)
    ```
    Merge using same category table.
@@ -76,20 +74,18 @@ Design review orchestrator. Find a design doc and run two-stage review (spec com
 
    **Stage 1 — Spec completeness:**
    ```
-   Task(design-reviewer, model: config.review.single_model):
-     Read ~/project-orchestrator/skills/design-reviewer/SKILL.md
+   Task(subagent_type: "design-reviewer", model: config.review.single_model):
      Design doc: {path}
      Stage: completeness
-     Files to review: {list of existing files proposed for modification}
+     Existing files to review (for integration context): {list of existing files proposed for modification}
    ```
 
    **Stage 2 — Feasibility:**
    ```
-   Task(design-reviewer, model: config.review.single_model):
-     Read ~/project-orchestrator/skills/design-reviewer/SKILL.md
+   Task(subagent_type: "design-reviewer", model: config.review.single_model):
      Design doc: {path}
      Stage: feasibility
-     Files to review: {list of existing files proposed for modification}
+     Existing files to review (for integration context): {list of existing files proposed for modification}
    ```
 
 6. **Report results** — present merged findings to user, update design doc status:
