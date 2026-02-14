@@ -110,6 +110,24 @@ If your task prompt includes an **ISOLATION** directive (e.g., "Do NOT edit {fil
 
 This prevents race conditions when multiple agents work on the same UI in parallel.
 
+## Worktree Mode
+
+If your task prompt includes a **Working directory** that differs from the project root
+or service root:
+
+1. cd into the working directory — this is your root for all operations
+2. The directory structure inside the worktree mirrors the original:
+   - Monorepo worktree: same layout as project root (all services inside)
+   - Polyrepo worktree: same layout as the service root (you're inside one service)
+3. All relative paths resolve against the worktree root
+4. Git operations (status, commit, push) happen inside the worktree
+5. The branch is already set up — don't create or switch branches
+6. Before committing, verify you're on the correct branch:
+   `git branch --show-current` should match what's in the living state doc.
+   If not, message the lead immediately.
+7. To reference project config files like `.claude/project.yml`, read from the
+   main project root (the worktree may not have gitignored files like `.claude/`)
+
 ## Red Flags — Stop and Ask
 
 - Task description is ambiguous → ask lead
