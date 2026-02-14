@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:quality-reviewer
 description: "Reviews code quality after spec compliance passes. Focuses on clean code, test coverage, security, and project-specific patterns. Uses git diff to scope review."
+user-invocable: false
 ---
 
 # Code Quality Reviewer

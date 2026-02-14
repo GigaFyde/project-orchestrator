@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:changelog
 description: Use when completing changes to any service - ensures standardized changelog entries with correct format, location, and content.
+user-invocable: false
 ---
 
 # Changelog

@@ -1,6 +1,7 @@
 ---
 name: project-orchestrator:spec-reviewer
 description: "Reviews whether an implementation matches its task specification. Reads actual code, not reports. Checks for missing requirements, extras, and misunderstandings."
+user-invocable: false
 ---
 
 # Spec Compliance Reviewer
