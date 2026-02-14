@@ -7,8 +7,12 @@ description: Verify completed work — evidence-based checks across all affected
 Evidence-based verification via the verification skill. Ensures tests pass, contracts match, git state is correct, and deployment is confirmed before claiming completion.
 </objective>
 
+<context>
+- Project config: @.claude/project.yml
+</context>
+
 <process>
-1. Load project config from `.claude/project.yml` (defaults if missing)
+1. Parse project config (auto-loaded via @.claude/project.yml, use defaults if missing)
 2. Find the active design doc in `{config.plans_dir}/`
 3. **Worktree detection** — check the design doc for worktree sections:
 

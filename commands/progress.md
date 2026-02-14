@@ -8,11 +8,16 @@ allowed-tools: [Read, Glob, Grep, AskUserQuestion]
 Status checker and router. Query feature status from design docs, report progress, and suggest the appropriate next command. Uses MCP tools when available, falls back to file parsing.
 </objective>
 
+<context>
+- Project config: @.claude/project.yml
+- Plans index: @docs/plans/INDEX.md
+</context>
+
 <process>
 
 ## Primary: MCP-powered approach
 
-1. **Load project config** from `.claude/project.yml` (defaults if missing)
+1. **Parse project config** (auto-loaded via @.claude/project.yml, use defaults if missing)
 
 2. **Find active features** — call `list_features(status: "active")`
    - If MCP call fails or returns error → jump to **Fallback** below

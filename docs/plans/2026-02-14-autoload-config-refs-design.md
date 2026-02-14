@@ -1,6 +1,6 @@
 # Autoload Config via @ Refs — Design & Implementation
 
-## Status: designing
+## Status: complete
 
 ## Design
 
@@ -42,15 +42,15 @@ Add a context section to each command body:
 
 | Command | `@.claude/project.yml` | `@docs/plans/INDEX.md` |
 |---------|----------------------|----------------------|
-| brainstorm | yes | yes |
 | implement | yes | yes |
 | review | yes | yes |
 | review-design | yes | yes |
 | progress | yes | yes |
-| worktree | yes | yes |
-| verify | yes | no (doesn't need INDEX) |
-| finish | yes | no (doesn't need INDEX) |
-| changelog | yes | no (doesn't need INDEX) |
+| brainstorm | yes | no (writes INDEX via skill, never reads it) |
+| worktree | yes | no (globs for design docs directly) |
+| verify | yes | no (finds design doc via plans_dir glob) |
+| finish | yes | no |
+| changelog | yes | no |
 
 #### Process step wording
 Commands currently say `Load project config from .claude/project.yml`. Update to:
@@ -59,7 +59,8 @@ Commands currently say `Load project config from .claude/project.yml`. Update to
 ```
 
 #### What stays the same
-- **Skills still instruct explicit `Read`** — `@` refs are lost on `/clear` and subagent spawns, so skills remain self-sufficient
+- **Skills assume config is in context** — skills say "Check if `.claude/project.yml` exists" and "parse and extract", they don't explicitly Read it. The `@` ref ensures config is available when invoked via command. After `/clear`, commands re-load it via `@` ref. Subagent spawns must include relevant config in prompts (skills already do this for architecture docs).
+- **No skill changes needed** — skills are already compatible with this approach
 
 #### Graceful failure
 - If `.claude/project.yml` doesn't exist → command proceeds with defaults (same as today)
@@ -69,7 +70,7 @@ Commands currently say `Load project config from .claude/project.yml`. Update to
 
 | # | Task | Status | Assignee | Spec | Quality |
 |---|------|--------|----------|------|---------|
-| 1 | Add @ refs and update process wording in all 9 command files | pending | — | — | — |
+| 1 | Add @ refs and update process wording in all 9 command files | complete | lead | ✅ | ✅ |
 
 ## Decisions & Context
 - Single task — all 9 commands are in the same repo, same pattern, no parallelism needed

@@ -11,10 +11,12 @@ Review the full implementation diff against its design doc. Run spec + quality r
 
 <context>
 - `$ARGUMENTS` — plan file path (optional, defaults to latest design doc)
+- Project config: @.claude/project.yml
+- Plans index: @docs/plans/INDEX.md
 </context>
 
 <process>
-1. **Load project config** from `.claude/project.yml` (defaults if missing)
+1. **Parse project config** (auto-loaded via @.claude/project.yml, use defaults if missing)
 
 2. **Find the design doc**
    - If a plan file path was provided in arguments, use it

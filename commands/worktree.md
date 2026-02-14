@@ -12,8 +12,12 @@ Use cases:
 - Re-creating a worktree that was cleaned up prematurely
 </objective>
 
+<context>
+- Project config: @.claude/project.yml
+</context>
+
 <process>
-1. Load project config from `.claude/project.yml` (defaults if missing)
+1. Parse project config (auto-loaded via @.claude/project.yml, use defaults if missing)
 2. Determine the plan slug:
    - If user provided `[slug]` argument: use it
    - If not: scan `{config.plans_dir}/` for design docs with status `designing` or `approved`
