@@ -22,6 +22,58 @@ Guide completion of development work.
 
 ---
 
+## Step 0: Detect Worktree
+
+Check the living state doc for a `## Worktree` (monorepo) or `## Worktrees` (polyrepo) section.
+
+If neither section exists: skip to Step 1 (normal flow).
+
+**Monorepo (single worktree):**
+1. cd into worktree path (absolute path from design doc)
+2. Before presenting options, rebase onto base branch:
+   ```bash
+   git fetch origin
+   git rebase origin/{base-branch}
+   ```
+3. If rebase conflicts:
+   - Run `git rebase --abort` to restore clean state
+   - Report the conflicted files to the user
+   - Tell user:
+     "Rebase has conflicts in: {file list}
+     Options:
+     1. Resolve manually: cd {worktree-path}, run `git rebase origin/{base-branch}`,
+        fix conflicts, `git rebase --continue`, then re-run `/project:finish`
+     2. Skip rebase and create PR as-is (GitHub will show conflicts)
+     3. Keep the branch and handle it later"
+   - Wait for user choice. Do NOT auto-resolve.
+4. After successful finish (Option 1 or 2):
+   - Verify worktree is clean: `cd {worktree-path} && git status --porcelain`
+   - If clean: `cd {project-root} && git worktree remove {worktree-path}`
+   - If dirty: warn user — "Worktree has uncommitted changes. Force remove, or clean up manually?"
+     - Force: `git worktree remove --force {worktree-path}`
+     - Manual: keep worktree, user handles it
+5. Remove `## Worktree` section from living state doc
+6. Run `git worktree prune` to clean up any stale entries
+
+**Polyrepo (per-service worktrees):**
+Process each service worktree from the `## Worktrees` table, in merge order
+(migrations → producers → consumers — same order as existing Step 6):
+1. For each service row in the table:
+   - cd into the service worktree path
+   - Rebase onto base branch: `git fetch origin && git rebase origin/{base-branch}`
+   - If rebase conflicts: same conflict handling as monorepo, but per-service.
+     Other services can continue independently.
+   - Present finish options per service (merge/PR/keep/discard)
+   - After finish: verify clean, remove worktree, prune
+2. For services NOT in the `## Worktrees` table (skipped during creation):
+   - Process in the main service directory as normal (existing Step 1+ flow)
+3. After all services processed:
+   - Remove `## Worktrees` section from living state doc
+   - Update living state doc with per-service results:
+     "backend: PR #42 created, frontend: PR #43 created, admin: merged locally"
+
+---
+
 ## Step 1: Identify Affected Services
 
 **Polyrepo** (`config.structure: polyrepo`): Each service folder is its own git repo. "Finish branch" means **per-service**.
@@ -180,14 +232,7 @@ If working from a plan in `{config.plans_dir}/`:
 
 ## Step 8: Worktree Cleanup
 
-If using git worktrees (Options 1, 2, 4):
-
-```bash
-git worktree list | grep <feature-branch>
-git worktree remove <worktree-path>
-```
-
-For Option 3: Keep worktree.
+Worktree cleanup is handled in Step 0 above.
 
 ---
 
