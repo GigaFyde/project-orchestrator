@@ -244,7 +244,9 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    - TeamDelete("implement-{slug}")
    - Update living state doc status to "complete"
    - If `config.plans_structure` is `standard`: move design doc to `{plans_dir}/completed/` and update INDEX.md
-   - Tell the user: "Implementation complete. Next steps: `/project:verify` then `/project:finish`"
+   - Tell the user next steps based on review status:
+     - If auto-review was enabled and all tasks passed: "Implementation complete. Next steps: `/project:verify` then `/project:finish`"
+     - If auto-review was disabled (`--no-review`) or any tasks were escalated: "Implementation complete. Next steps: `/project:review` → `/project:verify` → `/project:finish`"
 </process>
 
 <success_criteria>
@@ -258,5 +260,5 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 - [ ] Summary counters recalculated after each analytics write
 - [ ] Living state doc updated with final status
 - [ ] Team cleaned up via TeamDelete
-- [ ] User told next steps (`/project:verify`, `/project:finish`)
+- [ ] User told next steps (includes `/project:review` when auto-review was skipped or tasks were escalated)
 </success_criteria>
