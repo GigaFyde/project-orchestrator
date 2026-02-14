@@ -2,7 +2,6 @@
 name: project:implement
 description: Execute implementation from a design doc — creates team, spawns parallel workers, optional auto-review
 argument-hint: "[plan file path] [--no-review]"
-skills: [project-orchestrator:brainstorming]
 ---
 
 <objective>
