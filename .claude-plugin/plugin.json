@@ -1,6 +1,9 @@
 {
   "name": "project-orchestrator",
-  "version": "1.0.0",
-  "description": "Full-lifecycle project orchestration: brainstorm, design, implement with parallel teams, review, verify, and finish. Works with any project via convention-based .claude/project.yml config.",
-  "author": "toraka-dev"
+  "version": "1.1.0",
+  "description": "Ship multi-service features without losing context. Orchestrates parallel agent teams from brainstorming with multi-perspective design through wave-based implementation and dual-model code review — all coordinated via living design docs.",
+  "author": {
+    "name": "GigaFyde"
+  },
+  "keywords": ["orchestration", "teams", "parallel-agents", "code-review", "design-docs", "multi-service"]
 }

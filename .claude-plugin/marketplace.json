@@ -1,14 +1,14 @@
 {
   "name": "project-orchestrator",
   "owner": {
-    "name": "toraka-dev"
+    "name": "gigafyde"
   },
   "plugins": [
     {
       "name": "project-orchestrator",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "source": "./",
-      "description": "Full-lifecycle project orchestration: brainstorm, design, implement with parallel teams, review, verify, and finish."
+      "description": "Ship multi-service features without losing context. Orchestrates parallel agent teams from brainstorming with multi-perspective design through wave-based implementation and dual-model code review — all coordinated via living design docs."
     }
   ]
 }
