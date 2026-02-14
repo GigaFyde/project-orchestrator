@@ -27,11 +27,17 @@ Status checker and router. Query feature status from design docs, report progres
 
 5. **Get recent activity** — call `get_activity_log(feature: <slug>, limit: 5)`
 
-6. **Report:**
+6. **Check for worktree info** — parse the design doc for `## Worktree` (monorepo) or `## Worktrees` (polyrepo) section. Only include in report if the section exists.
+
+7. **Report:**
    ```
    Feature: {name}
    Status: {overall status}
    Plan: {file path}
+   Worktree: {absolute path} (branch: {branch})              # monorepo — only if ## Worktree exists
+   Worktrees:                                                  # polyrepo — only if ## Worktrees exists
+     {service}: {absolute path} (branch: {branch})
+     {service}: {absolute path} (branch: {branch})
 
    Tasks: {pending} pending | {in-progress} in-progress | {complete} complete | {reviewed} reviewed
 
@@ -40,7 +46,7 @@ Status checker and router. Query feature status from design docs, report progres
    - ...
    ```
 
-7. **Suggest next action** (same logic as below)
+8. **Suggest next action** (same logic as below)
 
 ## Fallback: Manual approach (if MCP unavailable)
 
@@ -50,16 +56,24 @@ Status checker and router. Query feature status from design docs, report progres
 2. **Parse status** — extract overall status and task breakdown:
    - Pending / In-progress / Complete (unreviewed) / Reviewed / Failed review counts
 
-3. **Report:**
+3. **Check for worktree info** — parse the design doc for `## Worktree` (monorepo) or `## Worktrees` (polyrepo) section. Only include in report if the section exists.
+   - Monorepo (`## Worktree`): extract Path and Branch from bullet list
+   - Polyrepo (`## Worktrees`): extract Service, Path, and Branch columns from markdown table
+
+4. **Report:**
    ```
    Feature: {name}
    Status: {overall status}
    Plan: {file path}
+   Worktree: {absolute path} (branch: {branch})              # monorepo — only if ## Worktree exists
+   Worktrees:                                                  # polyrepo — only if ## Worktrees exists
+     {service}: {absolute path} (branch: {branch})
+     {service}: {absolute path} (branch: {branch})
 
    Tasks: {pending} pending | {in-progress} in-progress | {complete} complete | {reviewed} reviewed
    ```
 
-4. **Suggest next action**
+5. **Suggest next action**
 
 ## Next Action Logic
 
