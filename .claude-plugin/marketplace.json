@@ -1,0 +1,14 @@
+{
+  "name": "project-orchestrator",
+  "owner": {
+    "name": "toraka-dev"
+  },
+  "plugins": [
+    {
+      "name": "project-orchestrator",
+      "version": "1.0.0",
+      "source": "./",
+      "description": "Full-lifecycle project orchestration: brainstorm, design, implement with parallel teams, review, verify, and finish."
+    }
+  ]
+}

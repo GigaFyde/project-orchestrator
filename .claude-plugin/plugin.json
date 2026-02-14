@@ -1,0 +1,6 @@
+{
+  "name": "project-orchestrator",
+  "version": "1.0.0",
+  "description": "Full-lifecycle project orchestration: brainstorm, design, implement with parallel teams, review, verify, and finish. Works with any project via convention-based .claude/project.yml config.",
+  "author": "toraka-dev"
+}
