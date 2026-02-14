@@ -123,6 +123,8 @@ This prevents race conditions when multiple agents work on the same UI in parall
 
 ## Dev-MCP Coordination (when MCP tools are available)
 
+All MCP calls below are optional resilience features. If any call fails or MCP is unavailable, skip it and continue — the core implementation workflow doesn't depend on MCP.
+
 ### On Task Start
 1. Verify clean git state and correct branch: `cd <service> && git status && git branch --show-current`
 2. `load_state(prefix: "implement-{slug}-task-{N}")` → if resuming after compaction, restore progress
@@ -130,7 +132,9 @@ This prevents race conditions when multiple agents work on the same UI in parall
    - If not found: fresh start
 3. `acquire_lock(files: [from task spec], agent_id: <your-team-name>, ttl_seconds: 600)`
 4. If denied → message lead with contested files, wait
+   - If MCP unavailable or `acquire_lock` fails, skip — proceed without lock. Optional resilience feature.
 5. `report_activity(action: "task_started", feature: <slug>, agent: <your-name>)`
+   - If MCP unavailable or call fails, skip — optional resilience feature.
 
 ### Mid-Task Checkpoint
 After each significant milestone (e.g., new file created, tests pass), save progress:
@@ -148,12 +152,17 @@ If `save_state` unavailable, skip — this is a resilience optimization, not a r
 
 ### On Task Complete
 1. `release_lock(lock_id: <from acquire response>)`
+   - If MCP unavailable or call fails, skip — optional resilience feature.
 2. `report_activity(action: "task_completed", feature: <slug>, agent: <your-name>, details: {files_changed, commit})`
+   - If MCP unavailable or call fails, skip — optional resilience feature.
 3. `delete_state(key: "implement-{slug}-task-{N}")` — clean up, no longer needed
+   - If MCP unavailable or call fails, skip — optional resilience feature.
 
 ### On Block/Error
 1. `release_lock(lock_id: <from acquire response>)` — don't hold locks while waiting
+   - If MCP unavailable or call fails, skip — optional resilience feature.
 2. `report_activity(action: "task_blocked", feature: <slug>, agent: <your-name>, details: {reason})`
+   - If MCP unavailable or call fails, skip — optional resilience feature.
 
 ## Related Commands
 
