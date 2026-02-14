@@ -92,16 +92,11 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 9. **Post-implementation review** (unless `--no-review`):
 
-   After ALL implementation tasks are complete but BEFORE committing to git, run a single review pass of the entire implementation using `/project:review` logic:
+   After ALL implementation tasks are complete, run `/project:review` against the full implementation diff. This is a holistic diff-based review (spec + quality in parallel), not per-task. See `/project:review` for the full process.
 
-   - Invoke the review command's speculative parallel pattern (see `/project:review`):
-     - `parallel` strategy: spawn spec-reviewer and quality-reviewer agents per `review.parallel_models`
-     - `single` strategy: spawn one spec-reviewer and one quality-reviewer per `review.single_model`
-   - Scope: all tasks in the design doc (holistic review of the full implementation)
-   - Use confidence scoring and auto-decision logic from `/project:review`
    - If review passes: proceed to completion
-   - If review finds issues: present findings to user, suggest fixes before committing
-   - Write analytics entry to `.claude/review-analytics.json` (see `/project:review` for schema)
+   - If review finds egregious issues: offer to fix with user approval, then re-review
+   - If review finds ambiguous issues: present to user for decision
 
 10. **Completion**
    - Delete scope file (MCP `delete_scope` or skip)

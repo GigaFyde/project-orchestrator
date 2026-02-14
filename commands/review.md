@@ -1,12 +1,12 @@
 ---
 name: project:review
-description: Review completed implementation tasks — speculative parallel review with confidence scoring
+description: Review implementation against design doc — holistic diff-based spec + quality review
 argument-hint: "[plan file path]"
 allowed-tools: [Read, Glob, Grep, Task]
 ---
 
 <objective>
-Review orchestrator. Find completed but unreviewed tasks in a design doc and run speculative parallel review (spec + quality in parallel) with confidence scoring and auto-decisions.
+Review the full implementation diff against its design doc. Run spec + quality reviewers in parallel, merge findings with confidence scoring, and offer to fix egregious issues (with user approval).
 </objective>
 
 <context>
@@ -21,76 +21,57 @@ Review orchestrator. Find completed but unreviewed tasks in a design doc and run
    - Otherwise, check `{config.plans_dir}/INDEX.md` for active plans, or find `{config.plans_dir}/*-design.md`
    - If no design doc exists, tell the user: "No design doc found. Nothing to review."
 
-3. **Find unreviewed tasks** — tasks where status is `complete` and Spec column is not `✅`
-   - If none exist, tell the user: "All tasks are reviewed. Run `/project:verify` to do final verification."
+3. **Gather the implementation diff**
+   - Determine the base branch from `config.services[name].branch` (default: `main`)
+   - Get the full diff: `git diff {base-branch}...HEAD` (or `git diff HEAD` if on the same branch with uncommitted changes)
+   - Also get `git diff --stat` for the file-level summary
+   - If no diff found, tell the user: "No changes to review."
 
 4. **Read review config** from `.claude/project.yml`:
    - `review.strategy`: `parallel` (default) or `single`
    - `review.parallel_models`: list of exactly 2 models (default: `[haiku, sonnet]`)
    - `review.single_model`: single model (default: `opus`)
-   - `review.speculative_quality`: boolean (default: `true`) — run quality in parallel with spec on first review
-   - `review.auto_approve`: boolean (default: `false`) — auto-approve when both models pass with no critical/important findings
-   - `review.auto_reject`: boolean (default: `false`) — auto-send-to-implementer when both models agree on critical issues
    - **Validate:** If `review.parallel_models` doesn't have exactly 2 entries, error: "parallel_models requires exactly 2 models (e.g., [haiku, sonnet])"
    - **Validate:** If `review.strategy` is not `parallel` or `single`, error: "review.strategy must be 'parallel' or 'single'"
 
-5. **Run review per task** (up to 3 concurrent). Behavior depends on strategy and whether this is a first review or a fix-iteration re-review.
+5. **Run holistic review** — spawn spec + quality reviewers in parallel against the full diff.
 
-   ---
-
-   ### First review (speculative parallel)
-
-   On the **first review** of a task (not a fix-iteration re-review), run spec and quality speculatively in parallel.
-
-   **When `review.strategy: parallel` (default) + `speculative_quality: true` (default):**
+   **When `review.strategy: parallel` (default):**
 
    Spawn all 4 reviewers in parallel:
    ```
    Task(spec-reviewer, model: config.review.parallel_models[0]):
-     Read ~/project-orchestrator/skills/spec-reviewer/SKILL.md
-     Task spec: {full task description}
-     Implementer report: {from Implementation Log}
-     Living state doc: {path}
+     Read the spec-reviewer skill
+     Design doc: {path}
+     Full diff: {git diff output}
+     Changed files: {git diff --stat}
+     Review the ENTIRE implementation against the design doc spec.
+     Check: missing requirements, extras beyond spec, misunderstandings.
 
    Task(spec-reviewer, model: config.review.parallel_models[1]):
      (same prompt)
 
    Task(quality-reviewer, model: config.review.parallel_models[0]):
-     Read ~/project-orchestrator/skills/quality-reviewer/SKILL.md
-     Task: {title}
-     What was implemented: {from report}
-     Plan: {path}
+     Read the quality-reviewer skill
+     Design doc: {path}
+     Full diff: {git diff output}
+     Changed files: {git diff --stat}
+     Review the ENTIRE implementation for code quality.
 
    Task(quality-reviewer, model: config.review.parallel_models[1]):
      (same prompt)
    ```
 
-   **When `review.strategy: single` + `speculative_quality: true`:**
+   **When `review.strategy: single`:**
 
-   Spawn 2 reviewers in parallel (1 spec + 1 quality):
+   Spawn 2 reviewers in parallel:
    ```
    Task(spec-reviewer, model: config.review.single_model):
-     Read ~/project-orchestrator/skills/spec-reviewer/SKILL.md
-     Task spec: {full task description}
-     Implementer report: {from Implementation Log}
-     Living state doc: {path}
+     (same prompt as above)
 
    Task(quality-reviewer, model: config.review.single_model):
-     Read ~/project-orchestrator/skills/quality-reviewer/SKILL.md
-     Task: {title}
-     What was implemented: {from report}
-     Plan: {path}
+     (same prompt as above)
    ```
-
-   **When `speculative_quality: false`:**
-
-   Fall back to sequential two-stage review (run spec first, then quality only if spec passes). Use the parallel or single spawn pattern from above for each stage independently.
-
-   ---
-
-   ### Fix-iteration re-review (non-speculative)
-
-   On fix iterations (2nd+ review after implementer fixes), always run **spec-only first** (sequential). If spec passes, then run quality. No speculative quality run — fix iterations are targeted, so spec re-check is the priority.
 
    ---
 
@@ -110,15 +91,15 @@ Review orchestrator. Find completed but unreviewed tasks in a design doc and run
 
    Determine spec verdict: **PASS** if no Critical or Important findings in Agreed or Model-B-only categories. **FAIL** otherwise.
 
-   **Step 2 — Handle quality results based on spec verdict:**
-   - If spec **FAIL**: discard all quality results (speculative results are invalid when spec fails)
+   **Step 2 — Merge quality findings:**
+   - If spec **FAIL**: discard all quality results (spec issues must be fixed first)
    - If spec **PASS**: merge quality findings using the same category table
 
    ---
 
    ### Confidence scoring
 
-   After merging, compute a confidence score based on these discrete scenarios:
+   After merging, compute a confidence score:
 
    | Scenario | Confidence | Value |
    |----------|------------|-------|
@@ -127,157 +108,108 @@ Review orchestrator. Find completed but unreviewed tasks in a design doc and run
    | Both stages FAIL, models agree on critical issues | High | 0.9 |
    | One model PASS, one FAIL (within a stage) | Low | 0.4 |
    | Both FAIL but disagree on which issues are critical | Medium | 0.6 |
-   | Model-B-only critical finding (stronger model found something weaker missed) | Medium | 0.7 |
+   | Model-B-only critical finding | Medium | 0.7 |
 
-   For `single` strategy: confidence is based on the single model's verdict only. Both-PASS with no findings = Very High (1.0), PASS with minor findings = High (0.85), FAIL with critical = High (0.9). No model-agreement scenarios apply.
-
-   ---
-
-   ### Auto-decision logic
-
-   After computing confidence, apply auto-decision rules:
-
-   ```
-   # Determine auto-decision
-   if spec_verdict == FAIL:
-     if has_agreed_critical_findings(spec) AND config.review.auto_reject:
-       decision = AUTO_REJECT  # send back to implementer
-     else:
-       decision = HUMAN_DECIDES
-
-   else:  # spec PASS
-     all_findings = spec_findings + quality_findings
-     if no_findings(all_findings) OR all_minor(all_findings):
-       if config.review.auto_approve:
-         decision = AUTO_APPROVE
-       else:
-         decision = HUMAN_DECIDES
-     elif quality_verdict == FAIL AND has_agreed_critical_findings(quality):
-       if config.review.auto_reject:
-         decision = AUTO_REJECT  # send back to implementer
-       else:
-         decision = HUMAN_DECIDES
-     else:
-       decision = HUMAN_DECIDES
-   ```
-
-   **AUTO_APPROVE**: Mark task as reviewed (Spec ✅, Quality ✅), report to user with confidence score.
-   **AUTO_REJECT**: Report findings and indicate task will be sent back to implementer for fixes (used by implement command's fix loop).
-   **HUMAN_DECIDES**: Present full report with findings and confidence score, wait for user decision.
+   For `single` strategy: no model-agreement scenarios. PASS with no findings = Very High (1.0), PASS with minor = High (0.85), FAIL with critical = High (0.9).
 
    ---
 
-6. **Report results** using this format per task:
+6. **Report results:**
 
    ```markdown
-   ## Review Result — Task {N}
+   ## Review Result
 
-   **Strategy:** {Speculative parallel (4 reviewers) | Speculative parallel (2 reviewers, single model) | Sequential (parallel models) | Sequential (single model)}
+   **Strategy:** {Parallel (4 reviewers) | Single (2 reviewers)}
    **Confidence: {Very High|High|Medium|Low} ({score})** — {reason}
-   **Auto-decision: {✅ Approved | ❌ Rejected → fix loop | ⏸ Human decides}** {override hint if auto}
+   **Verdict: {✅ Pass | ❌ Issues found}**
 
    ### Spec Findings
-   | Category | Count | Severity | Details |
-   |----------|-------|----------|---------|
-   | Agreed | {n} | {severity} | {summary} |
-   | Sonnet-only | {n} | {severity} | {summary} |
-   | Haiku-only | {n} | {severity} | {summary} |
+   | Category | Severity | Details |
+   |----------|----------|---------|
+   | Agreed | {severity} | {summary with file:line} |
+   | Sonnet-only | {severity} | {summary with file:line} |
+   | Haiku-only | {severity} | {summary with file:line} |
 
    ### Quality Findings
-   | Category | Count | Severity | Details |
-   |----------|-------|----------|---------|
-   | Agreed | {n} | {severity} | {summary} |
-   | Sonnet-only | {n} | {severity} | {summary} |
-   | Haiku-only | {n} | {severity} | {summary} |
-
-   _(Quality findings omitted — spec failed, speculative results discarded)_
+   | Category | Severity | Details |
+   |----------|----------|---------|
+   | Agreed | {severity} | {summary with file:line} |
+   | Sonnet-only | {severity} | {summary with file:line} |
+   | Haiku-only | {severity} | {summary with file:line} |
    ```
 
-   For `single` strategy, omit category columns (no model comparison) and show findings as a flat list.
+   For `single` strategy, show findings as a flat list (no category columns).
 
-   After reporting, **update living state doc** (Spec/Quality columns) and suggest next steps:
-   - AUTO_APPROVE: "Task {N} auto-approved with {confidence}. Override with `review.auto_approve: false`."
-   - AUTO_REJECT: "Task {N} auto-rejected — {count} critical findings. Sending to implementer for fixes."
-   - HUMAN_DECIDES: "Review the findings above and decide: approve, reject to fix loop, or dismiss specific findings."
-   - All tasks done → `/project:verify` then `/project:finish`
+7. **Handle findings:**
 
-7. **Write analytics entry** — after each review merge, append an entry to `.claude/review-analytics.json` at the consumer project root.
+   - **No findings / minor-only:** Report clean review, update living state doc, suggest `/project:verify` → `/project:finish`
+   - **Egregious / clear issues** (agreed critical findings with obvious fixes): Offer to fix them automatically:
+     "Found {n} clear issues. Want me to fix these? [list of proposed fixes]"
+     Wait for user approval before making any changes. After fixing, re-run review on the changed files.
+   - **Ambiguous / complex issues:** Present findings and let user decide how to handle them.
+     "Found {n} issues that need your input. [details]"
 
-   **Read the existing file** (create with `{"reviews": [], "summary": {}}` if missing), then append a review entry:
+8. **Update living state doc** — update Spec/Quality columns for all tasks based on holistic review result.
+   Suggest next steps: `/project:verify` then `/project:finish`
+
+9. **Write analytics entry** — append to `.claude/review-analytics.json` at the consumer project root.
+
+   Read the existing file (create with `{"reviews": [], "summary": {}}` if missing), then append:
 
    ```json
    {
      "date": "{YYYY-MM-DD}",
-     "feature": "{feature slug from design doc}",
-     "task": {task number},
-     "service": "{service name from task table}",
+     "feature": "{feature slug}",
+     "service": "{service name}",
      "strategy": "{parallel|single}",
      "models": ["{model-a}", "{model-b}"],
-     "stage": "{spec|quality|both}",
-     "haiku_verdict": "{pass|fail}",
-     "sonnet_verdict": "{pass|fail}",
-     "agreed_count": {n},
-     "haiku_only_count": {n},
-     "sonnet_only_count": {n},
-     "contradiction_count": {n},
+     "spec_verdict": "{pass|fail}",
+     "quality_verdict": "{pass|fail}",
      "confidence": {score},
-     "auto_decision": "{auto_approve|auto_reject|human_decides}",
-     "human_override": null,
-     "fix_iterations": 0,
-     "final_verdict": "{pass|fail|pending}",
+     "finding_count": {n},
+     "critical_count": {n},
+     "auto_fixed": {n},
+     "human_decided": {n},
      "findings": [
        {
          "id": "f{n}",
-         "description": "{finding description}",
+         "description": "{description}",
          "severity": "{critical|important|minor}",
-         "category": "{agreed|sonnet_only|haiku_only|contradiction}",
-         "resolution": "{pending|fixed|dismissed}",
+         "category": "{agreed|model_b_only|model_a_only|contradiction}",
+         "resolution": "{fixed|dismissed|pending}",
          "false_positive": false
        }
      ]
    }
    ```
 
-   For `single` strategy: set `models` to `["{single_model}"]`, set `haiku_verdict`/`sonnet_verdict` to the single model's verdict (both the same), and set `haiku_only_count`/`sonnet_only_count`/`contradiction_count` to 0.
+   For `single` strategy: set `models` to `["{single_model}"]`.
 
    **Recalculate summary counters** after appending:
    ```json
    {
-     "total_reviews": "{count of all entries in reviews array}",
-     "auto_approved": "{count where auto_decision == 'auto_approve'}",
-     "auto_rejected": "{count where auto_decision == 'auto_reject'}",
-     "human_decided": "{count where auto_decision == 'human_decides'}",
-     "avg_fix_iterations": "{average of fix_iterations across all entries}",
-     "model_accuracy": {
-       "haiku": { "true_positive": 0, "false_positive": 0, "missed": 0 },
-       "sonnet": { "true_positive": 0, "false_positive": 0, "missed": 0 }
-     },
+     "total_reviews": {n},
      "by_service": {
-       "{service}": {
-         "reviews": "{count for this service}",
-         "common_issues": ["{top recurring finding descriptions for this service}"]
-       }
+       "{service}": { "reviews": {n}, "common_issues": ["{patterns}"] }
+     },
+     "model_accuracy": {
+       "{model}": { "true_positive": 0, "false_positive": 0, "missed": 0 }
      }
    }
    ```
 
-   **Model accuracy tracking:** Update `model_accuracy` when `human_override` is set (not on initial write — accuracy is only knowable after human feedback). When a human overrides:
-   - Override approves (auto_reject overridden): findings that were auto_reject triggers become `false_positive` for the models that flagged them
-   - Override rejects (auto_approve overridden): `missed` increments for models that didn't flag the issue
-   - Findings confirmed by human: `true_positive` increments for models that flagged them
-
-   **Human override update:** When a human overrides an auto-decision, update the corresponding review entry's `human_override` field to `"approve"` or `"reject"`, update finding resolutions, recalculate `model_accuracy`, and recalculate summary counters.
+   **Model accuracy tracking:** Update when findings are resolved (fixed = true_positive, dismissed = false_positive for the model that flagged it).
 
    Write the updated JSON back to `.claude/review-analytics.json`.
 </process>
 
 <success_criteria>
-- [ ] All completed tasks have been reviewed (spec + quality, or spec-only if spec failed)
-- [ ] Speculative parallel execution used on first review iteration (4 agents for parallel strategy, 2 for single)
-- [ ] Confidence score computed and reported for each task
-- [ ] Auto-decisions applied when enabled and confidence is sufficient
+- [ ] Full implementation diff reviewed holistically (not per-task)
+- [ ] Spec + quality reviewers run in parallel per strategy
+- [ ] Confidence score computed and reported
+- [ ] Egregious issues offered for auto-fix (with user approval)
+- [ ] Ambiguous issues presented for user decision
 - [ ] Living state doc updated with review results
-- [ ] User told which tasks passed/failed, confidence scores, and next steps
-- [ ] Analytics entry written to `.claude/review-analytics.json` after each review merge
-- [ ] Summary counters recalculated after each append
+- [ ] Analytics entry written to `.claude/review-analytics.json`
+- [ ] User told next steps (`/project:verify`, `/project:finish`)
 </success_criteria>
