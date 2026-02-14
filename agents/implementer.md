@@ -15,8 +15,7 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
 
 On task start, use MCP tools for structured context, with manual fallbacks:
 
-1. `repo_status(service: <target-service>)` → git state, branch, dirty files
-   - Fallback: `git status` + `git branch` in service dir
+1. Check target service git state: `cd <service> && git status && git branch --show-current`
 2. `load_state(prefix: "implement-{slug}-task-{N}")` → check for saved progress
    - If found: resume from checkpoint (skip steps already completed)
    - If not found: fresh start

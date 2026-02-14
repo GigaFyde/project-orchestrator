@@ -10,7 +10,7 @@ Evidence-based verification via the verification skill. Ensures tests pass, cont
 <process>
 1. Load project config from `.claude/project.yml` (defaults if missing)
 2. Invoke the `project-orchestrator:verification` skill to run evidence-based verification
-   - Skill uses `verify_workspace()` MCP tool for git state checks (falls back to manual git commands if MCP unavailable)
+   - Skill uses manual git commands for git state checks (`git status`, `git branch --show-current` per service)
    - Test commands from `config.services[name].test` or auto-detected
 3. After verification passes, suggest `/project:finish` if the branch is ready to merge
 </process>
