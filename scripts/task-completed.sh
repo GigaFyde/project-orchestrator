@@ -18,9 +18,15 @@ INPUT=$(cat)
 TASK_SUBJECT=$(echo "$INPUT" | jq -r '.task_subject // empty')
 TASK_ID=$(echo "$INPUT" | jq -r '.task_id // empty')
 
+# Graceful fallback for missing metadata
+TASK_LABEL="the completed task"
+[ -n "$TASK_ID" ] && [ -n "$TASK_SUBJECT" ] && TASK_LABEL="Task #${TASK_ID}: ${TASK_SUBJECT}"
+[ -n "$TASK_ID" ] && [ -z "$TASK_SUBJECT" ] && TASK_LABEL="Task #${TASK_ID}"
+[ -z "$TASK_ID" ] && [ -n "$TASK_SUBJECT" ] && TASK_LABEL="${TASK_SUBJECT}"
+
 if [ "$VERIFICATION" = "agent" ]; then
   CONTEXT="Verify this task completion against the design doc at ${ACTIVE_PLAN}."
-  CONTEXT="${CONTEXT} Task #${TASK_ID}: ${TASK_SUBJECT}."
+  CONTEXT="${CONTEXT} ${TASK_LABEL}."
   CONTEXT="${CONTEXT} Check: 1) Files mentioned exist and contain expected changes."
   CONTEXT="${CONTEXT} 2) A commit was created. 3) Task spec requirements from the design doc are met."
 
@@ -28,7 +34,7 @@ if [ "$VERIFICATION" = "agent" ]; then
     '{hookSpecificOutput: {hookEventName: "TaskCompleted", additionalContext: $ctx}}'
 
 elif [ "$VERIFICATION" = "prompt" ]; then
-  CONTEXT="Lightweight verification: check that the task completion for '${TASK_SUBJECT}'"
+  CONTEXT="Lightweight verification: check that the task completion for '${TASK_LABEL}'"
   CONTEXT="${CONTEXT} includes a commit SHA, list of files changed, and test results."
   CONTEXT="${CONTEXT} Design doc: ${ACTIVE_PLAN}."
 
