@@ -4,13 +4,21 @@ Full-lifecycle project orchestration plugin for Claude Code. Turns feature ideas
 
 ## Installation
 
-Add to your project's `.claude/settings.json`:
+1. Clone the repo:
+
+```bash
+git clone git@github.com:gigafyde/project-orchestrator.git
+```
+
+2. Add the plugin path to your project's `.claude/settings.json`:
 
 ```json
 {
-  "plugins": ["path/to/project-orchestrator"]
+  "plugins": ["/absolute/path/to/project-orchestrator"]
 }
 ```
+
+3. (Optional) Create `.claude/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
 
 ## Commands
 
