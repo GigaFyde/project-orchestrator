@@ -52,10 +52,21 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 5a. **Check for `--no-review` flag** — if present, skip the post-implementation review pass entirely. Default: review enabled.
 
-6. **Create implementation team**
+6. **Write orchestrator state file**
+   Write `.claude/orchestrator-state.json` so hooks can find the active plan immediately when implementation starts.
+   - Build JSON with: `active_plan` (relative path to design doc), `slug`, `team` ("implement-{slug}"), `started` (ISO 8601 timestamp), `worktrees` (from step 5.5)
+   - Worktrees field structure:
+     - Polyrepo: `{ "service-name": "/abs/path/to/worktree" }` per service
+     - Monorepo: `{ "_all": "/abs/path/to/worktree" }`
+     - No worktrees: `{}`
+   - **Atomic write:** Write to a temp file first (`.claude/orchestrator-state.json.tmp`), then `mv` to final path to prevent read-during-write corruption
+   - Ensure `.claude/` directory exists before writing
+
+6a. **Create implementation team**
    ```
    TeamCreate("implement-{slug}")
    ```
+   - **If TeamCreate fails:** Delete `.claude/orchestrator-state.json` (clean up the state file written in step 6), then report the error to the user
 
 6b. **Create scope file for auto-approve hook (optional)**
    - Try MCP: `create_scope(team, services, wave)` — graceful fail if unavailable
@@ -103,6 +114,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 10. **Completion**
    - Delete scope file (MCP `delete_scope` or skip)
    - TeamDelete("implement-{slug}")
+   - Delete `.claude/orchestrator-state.json` (clean up active plan marker now that implementation is done)
    - Update living state doc status to "complete"
    - If `config.plans_structure` is `standard`: move design doc to `{plans_dir}/completed/` and update INDEX.md
    - Tell the user next steps:
@@ -117,5 +129,6 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 - [ ] Analytics entry written to `.claude/review-analytics.json` (unless `--no-review`)
 - [ ] Living state doc updated with final status
 - [ ] Team cleaned up via TeamDelete
+- [ ] `.claude/orchestrator-state.json` deleted after TeamDelete
 - [ ] User told next steps (includes `/project:review` when `--no-review` was used)
 </success_criteria>
