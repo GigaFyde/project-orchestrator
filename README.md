@@ -4,21 +4,16 @@ Full-lifecycle project orchestration plugin for Claude Code. Turns feature ideas
 
 ## Installation
 
-1. Clone the repo:
+Run this inside Claude Code to add the marketplace and install the plugin:
 
-```bash
-git clone git@github.com:gigafyde/project-orchestrator.git
+```
+/plugin marketplace add gigafyde/project-orchestrator
+/plugin install project-orchestrator@project-orchestrator
 ```
 
-2. Add the plugin path to your project's `.claude/settings.json`:
+**Private repo note:** This requires access to the GitHub repo. Your existing git credentials (e.g., `gh auth login`) are used automatically. For background auto-updates, set `GITHUB_TOKEN` or `GH_TOKEN` in your environment.
 
-```json
-{
-  "plugins": ["/absolute/path/to/project-orchestrator"]
-}
-```
-
-3. (Optional) Create `.claude/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
+(Optional) Create `.claude/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
 
 ## Commands
 
