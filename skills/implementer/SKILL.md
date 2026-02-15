@@ -81,7 +81,22 @@ If self-review finds issues, fix them before reporting.
 
 ## Reporting to Lead
 
-Send a message to the lead via `SendMessage` with:
+**Step 1: Update task with metadata** — call `TaskUpdate` with status and metadata in a single call:
+
+```
+TaskUpdate(taskId: <your-task-id>, status: "completed", metadata: {
+  "commit": "<short SHA>",
+  "files_changed": ["path/to/file1", "path/to/file2"],
+  "tests_passed": true,
+  "design_doc": "<relative path to living state doc from your task prompt>"
+})
+```
+
+This must happen BEFORE SendMessage so that hooks (e.g., TaskCompleted verification) can read the metadata. The `design_doc` value is the living state doc path provided in your task prompt. This metadata is separate from MCP `save_state` — `save_state` is for mid-task checkpointing, metadata is for hook verification.
+
+If blocked or needs clarification, use `status: "in_progress"` and skip metadata — just SendMessage the lead.
+
+**Step 2: Send completion report** via `SendMessage`:
 
 ```
 Task: {task number and title}
