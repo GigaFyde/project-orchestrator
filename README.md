@@ -155,6 +155,76 @@ Without `project.yml`, the plugin assumes:
 - **Test command:** auto-detected from package.json / build.gradle / Makefile
 - **Changelog:** none (skip changelog step)
 
+## Plugin Hooks
+
+The plugin ships 4 opt-in hooks that improve orchestration quality during `/project:implement` sessions. **No hooks fire unless explicitly enabled** — missing config, missing dependencies (`jq`), or missing environment variables all result in silent no-ops.
+
+### Configuration
+
+Enable hooks in `.claude/project.yml`:
+
+```yaml
+# .claude/project.yml
+hooks:
+  task_verification: "agent"    # "agent" | "prompt" | "off" (default: off)
+  stop_guard: true              # default: false
+  session_context: true         # default: false
+  precompact_state: true        # default: false
+```
+
+| Key | Values | Default |
+|-----|--------|---------|
+| `hooks.task_verification` | `"agent"`, `"prompt"`, `"off"` | `"off"` |
+| `hooks.stop_guard` | `true`, `false` | `false` |
+| `hooks.session_context` | `true`, `false` | `false` |
+| `hooks.precompact_state` | `true`, `false` | `false` |
+
+### Shipped Hooks
+
+#### TaskCompleted — Deliverable Verification
+
+Verifies that completed tasks actually match their spec in the design doc before accepting completion. Only fires during active `/project:implement` sessions.
+
+- **`"agent"` mode** — injects thorough verification context: checks files exist, commits were made, and spec requirements are met. Adds **30–120s per task**.
+- **`"prompt"` mode** — lightweight format check: confirms commit SHA, file list, and test results are present. Adds ~5s per task.
+- **When to enable:** Recommended for projects where spec compliance matters. Use `"agent"` for thoroughness, `"prompt"` for speed.
+
+#### Stop — Prevent Premature Session End
+
+Blocks the lead agent from stopping while implementation tasks are still in-progress or pending. On second stop attempt, allows it with a warning that running implementers will continue without coordination.
+
+- **When to enable:** Recommended for long-running parallel implementations where accidental stops are costly.
+
+#### SessionStart — Auto-Load Context After `/clear`
+
+After `/clear` or session resume, injects a summary of the active implementation: plan name, task progress, worktree paths, and blocked/escalated tasks. Fires on `clear` and `resume` only (not `compact` — PreCompact handles that).
+
+- **When to enable:** Recommended if you use `/clear` during implementation sessions.
+
+#### PreCompact — Preserve State Across Compaction
+
+Before automatic context compaction, injects orchestration state (plan, team, progress) so the summarizer preserves it. Complements SessionStart — one handles `/clear`, the other handles compaction.
+
+- **When to enable:** Recommended for large implementations that may trigger context compaction.
+
+### Performance
+
+| Hook | Overhead |
+|------|----------|
+| TaskCompleted (`"agent"`) | 30–120s per task completion |
+| TaskCompleted (`"prompt"`) | ~5s per task completion |
+| Stop guard | <1s |
+| SessionStart context | <1s |
+| PreCompact state | <1s |
+
+For a 6-task implementation with 3 parallel workers, agent-mode verification adds roughly 3–12 minutes total.
+
+### Scope Protection (Example)
+
+The plugin includes a reference implementation for file-scope enforcement via PreToolUse hooks. This is shipped as a **template** in [`examples/hooks/scope-protection/`](examples/hooks/scope-protection/), not as a built-in hook — scope management varies across projects.
+
+See the example README for setup instructions, scope file format, and `hooks.json` snippet.
+
 ## Config Loading
 
 Every skill/command begins with:
