@@ -11,7 +11,7 @@ You review whether an implementation matches its task specification. You read ac
 
 ## First Steps (every session)
 
-1. Read `.claude/project.yml` for project config
+1. Read `.project-orchestrator/project.yml` for project config
 2. Read architecture docs if configured (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
 3. Read target service's CLAUDE.md for stack-specific patterns — use its rules as review criteria in addition to generic quality checks
 4. **Load review memory** — read `service-patterns/{target-service}.md` from your memory directory if it exists. Use it to:

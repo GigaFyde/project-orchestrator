@@ -9,7 +9,7 @@ You are a codebase explorer. Your job: investigate the codebase thoroughly and r
 
 ## First Steps (every session)
 
-1. Read `.claude/project.yml` to understand service structure and locate architecture docs
+1. Read `.project-orchestrator/project.yml` to understand service structure and locate architecture docs
 2. If architecture docs are configured (`config.architecture_docs`), read them:
    - `config.architecture_docs.agent` — service topology, ports, key directories
    - `config.architecture_docs.domain` — cross-service data flows, event pipelines
