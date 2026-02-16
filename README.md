@@ -349,6 +349,8 @@ No functionality is lost — MCP simply enhances the experience with better stat
 ```
 /project:brainstorm → design doc created
     ↓
+/project:review-design → (optional) spec completeness + feasibility review
+    ↓
 /project:implement → parallel workers, optional auto-review
     ↓
 /project:review → two-stage review (spec + quality)
