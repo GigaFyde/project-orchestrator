@@ -4,11 +4,12 @@ description: Verify completed work — evidence-based checks across all affected
 ---
 
 <objective>
-Evidence-based verification via the verification skill. Ensures tests pass, contracts match, git state is correct, and deployment is confirmed before claiming completion.
+Evidence-based verification. Ensures tests pass, contracts match, git state is correct, and deployment is confirmed before claiming completion.
 </objective>
 
 <context>
 - Project config: @.project-orchestrator/project.yml
+- Verification skill: @skills/verification/SKILL.md
 </context>
 
 <process>
@@ -31,7 +32,7 @@ Evidence-based verification via the verification skill. Ensures tests pass, cont
    **No worktree section:**
    - Verify in the main working tree as normal
 
-4. Invoke the `project-orchestrator:verification` skill to run evidence-based verification
+4. Follow the verification skill (loaded above) to run evidence-based verification
    - Pass the resolved working directory (worktree path or main tree) for each service
    - Skill uses manual git commands for git state checks (`git status`, `git branch --show-current` per service)
    - Test commands from `config.services[name].test` or auto-detected

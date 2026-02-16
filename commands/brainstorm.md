@@ -3,22 +3,22 @@ name: project:brainstorm
 description: Start the feature lifecycle — brainstorm and design phase
 argument-hint: "[feature description]"
 allowed-tools: [Read, Glob, Grep, Task, AskUserQuestion]
-skills: [project-orchestrator:brainstorming]
 ---
 
 <objective>
-Design phase orchestrator. Invoke the brainstorming skill to turn a feature idea into an approved design document. Stops before implementation — that's `/project:implement`.
+Design phase orchestrator. Follow the brainstorming skill below to turn a feature idea into an approved design document. Stops before implementation — that's `/project:implement`.
 </objective>
 
 <context>
 - `$ARGUMENTS` — feature description (skip "what's the feature?" if provided)
 - Project config: @.project-orchestrator/project.yml
+- Brainstorming skill: @skills/brainstorming/SKILL.md
 </context>
 
 <process>
 1. Parse project config (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 2. Read architecture docs if configured (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
-3. Invoke the `project-orchestrator:brainstorming` skill to guide this feature through the **design phase only**
+3. Follow the brainstorming skill (loaded above) to guide this feature through the **design phase only**
 4. **When spawning Explore agents**, always include relevant sections from the architecture docs in each agent's prompt — subagents don't inherit your context
 5. If `$ARGUMENTS` provided, use as starting point — skip asking "what's the feature idea?" and move directly to scoping which services are affected
 6. If no description provided, ask the user what they want to build

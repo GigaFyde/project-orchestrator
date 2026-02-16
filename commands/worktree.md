@@ -4,7 +4,7 @@ description: Create an isolated git worktree for a plan — manual setup for par
 ---
 
 <objective>
-Create a git worktree for a plan slug, enabling isolated parallel work. Thin wrapper around the worktree skill for manual use outside the `/project:implement` flow.
+Create a git worktree for a plan slug, enabling isolated parallel work. For manual use outside the `/project:implement` flow.
 
 Use cases:
 - Manual worktree setup before running `/project:implement`
@@ -14,6 +14,7 @@ Use cases:
 
 <context>
 - Project config: @.project-orchestrator/project.yml
+- Worktree skill: @skills/worktree/SKILL.md
 </context>
 
 <process>
@@ -27,7 +28,7 @@ Use cases:
 3. Find the design doc at `{config.plans_dir}/*-{slug}-design.md` (if it exists)
    - If found: extract `Services Affected` list from the design doc
    - If not found: ask user which services are affected (or default to project root for monorepo)
-4. Invoke the `project-orchestrator:worktree` skill with:
+4. Follow the worktree skill (loaded above) with:
    - **slug** — the plan slug
    - **services** — the affected services list
    - **design_doc_path** — absolute path to the design doc (if it exists)

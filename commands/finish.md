@@ -6,12 +6,13 @@ allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, AskUserQuestion]
 ---
 
 <objective>
-Branch finishing via the finishing-branch skill. Handles git repos, auto-deploy awareness, multi-service PR ordering, and changelog.
+Branch finishing. Handles git repos, auto-deploy awareness, multi-service PR ordering, and changelog.
 </objective>
 
 <context>
 - `$ARGUMENTS` — service name (optional, will detect from git/MCP status if omitted)
 - Project config: @.project-orchestrator/project.yml
+- Finishing skill: @skills/finishing-branch/SKILL.md
 </context>
 
 <process>
@@ -22,7 +23,7 @@ Branch finishing via the finishing-branch skill. Handles git repos, auto-deploy 
    - Check git status across service directories: `cd <service> && git status && git branch --show-current`
    - Present findings and ask user which service(s) to finish
 
-3. Invoke the `project-orchestrator:finishing-branch` skill to handle branch finishing
+3. Follow the finishing skill (loaded above) to handle branch finishing
 4. If a service name was provided via `$ARGUMENTS`, start with that service
 
 ## After finishing
