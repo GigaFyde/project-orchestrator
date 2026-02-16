@@ -13,8 +13,8 @@ Inspired by [obra's superpowers](https://github.com/obra/superpowers) and [GSD](
 Run this inside Claude Code to add the marketplace and install the plugin:
 
 ```
-/plugin marketplace add gigafyde/claude-marketplace
-/plugin install project-orchestrator@claude-marketplace
+/plugin marketplace add gigafyde/gigafyde-claude-plugins
+/plugin install project-orchestrator@gigafyde-claude-plugins
 ```
 
 ### Direct Installation
