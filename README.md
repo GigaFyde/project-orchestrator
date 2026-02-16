@@ -476,19 +476,6 @@ Review results are tracked in `.project-orchestrator/review-analytics.json` at t
 
 The `/project:progress` command includes an analytics summary when the analytics file exists.
 
-## Migration
-
-### Config File Location Change
-
-If you have an existing `.claude/project.yml` from a previous version (before v1.3.0), you must move it to `.project-orchestrator/project.yml`. The config file has moved as part of completing the dotfolder migration.
-
-```bash
-# If you have the old location:
-mv .claude/project.yml .project-orchestrator/project.yml
-```
-
-This change aligns with Claude Code's plugin conventions and keeps plugin-specific files isolated from the core `.claude/` directory.
-
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
