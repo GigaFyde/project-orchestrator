@@ -1,3 +1,5 @@
+> **Note:** This file contains development instructions for contributing to the plugin. For usage instructions, see [README.md](README.md).
+
 # Project Orchestrator Plugin
 
 Claude Code plugin for multi-service feature orchestration using parallel agent teams.
