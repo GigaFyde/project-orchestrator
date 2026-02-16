@@ -53,14 +53,14 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 5a. **Check for `--no-review` flag** — if present, skip the post-implementation review pass entirely. Default: review enabled.
 
 6. **Write orchestrator state file**
-   Write `.claude/orchestrator-state.json` so hooks can find the active plan immediately when implementation starts.
+   Write `.project-orchestrator/state.json` so hooks can find the active plan immediately when implementation starts.
    - Build JSON with: `active_plan` (relative path to design doc), `slug`, `team` ("implement-{slug}"), `started` (ISO 8601 timestamp), `worktrees` (from step 5.5)
    - Worktrees field structure:
      - Polyrepo: `{ "service-name": "/abs/path/to/worktree" }` per service
      - Monorepo: `{ "_all": "/abs/path/to/worktree" }`
      - No worktrees: `{}`
-   - **Atomic write:** Write to a temp file first (`.claude/orchestrator-state.json.tmp`), then `mv` to final path to prevent read-during-write corruption
-   - Ensure `.claude/` directory exists before writing
+   - **Atomic write:** Write to a temp file first (`.project-orchestrator/state.json.tmp`), then `mv` to final path to prevent read-during-write corruption
+   - Ensure `.project-orchestrator/` directory exists before writing
    - **If write fails:** Report error to user and exit — no cleanup needed (team doesn't exist yet)
 
 6a. **Create implementation team**
@@ -68,8 +68,8 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    TeamCreate("implement-{slug}")
    ```
    - **If TeamCreate fails:**
-     - Delete `.claude/orchestrator-state.json` (clean up the state file from step 6)
-     - Leave `.claude/` directory intact (may be used by other hooks/state)
+     - Delete `.project-orchestrator/state.json` (clean up the state file from step 6)
+     - Leave `.project-orchestrator/` directory intact (may be used by other files)
      - Report error to user, exit
 
 6b. **Create scope file for auto-approve hook**
@@ -81,8 +81,8 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    - Build scope JSON matching the hook's expected schema:
      - `"shared"` array: all service directory paths (relative to project root)
      - Per-agent keys added later when spawning workers (step 7) if task-specific scoping needed
-   - Write `.claude/hooks/scopes/{team-name}.json` via Write tool
-   - Ensure `.claude/hooks/scopes/` directory exists before writing
+   - Write `.project-orchestrator/scopes/{team-name}.json` via Write tool
+   - Ensure `.project-orchestrator/scopes/` directory exists before writing
    - Try MCP `create_scope(team, services, wave)` as optimization — but the Write approach above is the primary path
 
    Scope file format (must match scope-protection.sh expectations):
@@ -192,7 +192,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 10. **Completion**
    - Delete scope file (MCP `delete_scope` or skip)
    - TeamDelete("implement-{slug}")
-   - Delete `.claude/orchestrator-state.json` (clean up active plan marker now that implementation is done)
+   - Delete `.project-orchestrator/state.json` (clean up active plan marker now that implementation is done)
    - Update living state doc status to "complete"
    - If `config.plans_structure` is `standard`: move design doc to `{plans_dir}/completed/` and update INDEX.md
    - Tell the user next steps:
@@ -204,9 +204,9 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 - [ ] All implementation tasks complete
 - [ ] Post-implementation review passed (unless `--no-review`)
 - [ ] Review findings presented to user if issues found
-- [ ] Analytics entry written to `.claude/review-analytics.json` (unless `--no-review`)
+- [ ] Analytics entry written to `.project-orchestrator/review-analytics.json` (unless `--no-review`)
 - [ ] Living state doc updated with final status
 - [ ] Team cleaned up via TeamDelete
-- [ ] `.claude/orchestrator-state.json` deleted after TeamDelete
+- [ ] `.project-orchestrator/state.json` deleted after TeamDelete
 - [ ] User told next steps (includes `/project:review` when `--no-review` was used)
 </success_criteria>

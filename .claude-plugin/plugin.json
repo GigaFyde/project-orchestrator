@@ -1,6 +1,6 @@
 {
   "name": "project-orchestrator",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Ship multi-service features without losing context. Orchestrates parallel agent teams from brainstorming with multi-perspective design through wave-based implementation and dual-model code review — all coordinated via living design docs.",
   "author": {
     "name": "GigaFyde"

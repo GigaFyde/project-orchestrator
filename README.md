@@ -15,6 +15,8 @@ Run this inside Claude Code to add the marketplace and install the plugin:
 
 (Optional) Create `.claude/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
 
+**Recommended:** Add `.project-orchestrator/` to your `.gitignore` — it contains session-specific state (active plan tracker, scope files, review analytics, agent memory) that shouldn't be committed.
+
 ## Commands
 
 | Command | Purpose |
@@ -275,7 +277,7 @@ For projects that use permission hooks (auto-approve systems), the `implement` c
 
 To set up auto-approve hooks for your project, configure:
 1. A PreToolUse hook that reads scope files
-2. Scope files at `.claude/hooks/scopes/{team}.json`
+2. Scope files at `.project-orchestrator/scopes/{team}.json`
 3. An MCP tool or manual process to create/delete scope files per implementation wave
 
 ## Review System v2
@@ -347,7 +349,7 @@ Minor-only findings (no critical or important issues) do not block -- the task i
 
 ### Review Memory
 
-Reviewers maintain structured memory that improves review quality over time. Memory is stored per-service at `.claude/agent-memory/project-orchestrator-{type}/`:
+Reviewers maintain structured memory that improves review quality over time. Memory is stored per-service at `.project-orchestrator/agent-memory/{type}/`:
 
 ```
 MEMORY.md                    # index + cross-review patterns
@@ -372,7 +374,7 @@ service-patterns/
 
 ### Review Analytics
 
-Review results are tracked in `.claude/review-analytics.json` at the project root. This file is append-only and records:
+Review results are tracked in `.project-orchestrator/review-analytics.json` at the project root. This file is append-only and records:
 
 ```json
 {

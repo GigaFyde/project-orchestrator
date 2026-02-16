@@ -9,13 +9,13 @@ command -v jq >/dev/null || exit 0
 [ -n "$CLAUDE_PROJECT_DIR" ] || exit 0
 
 # Read active team from orchestrator state
-STATE_FILE="${CLAUDE_PROJECT_DIR}/.claude/orchestrator-state.json"
+STATE_FILE="${CLAUDE_PROJECT_DIR}/.project-orchestrator/state.json"
 [ -f "$STATE_FILE" ] || exit 0
 TEAM=$(jq -r '.team // empty' "$STATE_FILE" 2>/dev/null)
 [ -n "$TEAM" ] || exit 0
 
 # Read scope file for the active team
-SCOPE_FILE="${CLAUDE_PROJECT_DIR}/.claude/hooks/scopes/${TEAM}.json"
+SCOPE_FILE="${CLAUDE_PROJECT_DIR}/.project-orchestrator/scopes/${TEAM}.json"
 [ -f "$SCOPE_FILE" ] || exit 0
 
 # Parse input from stdin
@@ -44,5 +44,5 @@ AGENT_MATCH=$(jq -r --arg agent "$AGENT_NAME" --arg path "$REL_PATH" '
 [ -n "$AGENT_MATCH" ] && exit 0
 
 # File is out of scope — block the edit
-jq -n --arg reason "File '${REL_PATH}' is outside your assigned scope. Check .claude/hooks/scopes/${TEAM}.json for allowed paths." \
+jq -n --arg reason "File '${REL_PATH}' is outside your assigned scope. Check .project-orchestrator/scopes/${TEAM}.json for allowed paths." \
   '{decision: "block", reason: $reason}'

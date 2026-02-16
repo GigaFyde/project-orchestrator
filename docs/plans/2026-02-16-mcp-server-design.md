@@ -391,7 +391,7 @@ Returns:
   { success: true, scope_file: string }
 ```
 
-**Behavior:** Writes a scope file to `.claude/orchestrator-scope.json` in the project directory. The file contains the team, services, wave, and timestamp. Auto-approve hooks can read this to decide whether to permit tool calls.
+**Behavior:** Writes a scope file to `.project-orchestrator/scopes/{team}.json` in the project directory. The file contains the team, services, wave, and timestamp. Auto-approve hooks can read this to decide whether to permit tool calls.
 
 ##### `delete_scope`
 
@@ -882,7 +882,7 @@ Or for local development:
 - **State keys are namespaced by convention** — Keys like `implement-{slug}-task-{N}` and `handoff-{from}-to-{to}` are conventions, not enforced schemas. The server stores whatever key is given.
 - **Lock TTL must be generous** — Implementer agents can take 5+ minutes per task. Default 10min TTL, but allow override.
 - **Cross-project data needs project identification** — Learnings and metrics must include project name (from project.yml) to be useful in cross-project queries.
-- **Scope files go in project directory** — Unlike other state (in `~/.project-orchestrator/`), scope files are written to `.claude/orchestrator-scope.json` in the project directory so that hook scripts can read them.
+- **Scope files go in project directory** — Unlike other state (in `~/.project-orchestrator/`), scope files are written to `.project-orchestrator/scopes/{team}.json` in the project directory so that hook scripts can read them.
 - **`list_branches` runs git commands** — This tool shells out to `git branch --list` in service directories. It needs the project root path to discover repos. No caching — always live data.
 - **`acquire_lock` wait polling** — When `wait: true`, the server polls every 2s. This happens server-side (the tool call blocks until lock is acquired or timeout). The client just sees a longer response time.
 - **`detect_conflicts` file lists are best-effort** — The implement lead infers files from task descriptions. If unavailable, skip conflict detection. It's advisory, not blocking.

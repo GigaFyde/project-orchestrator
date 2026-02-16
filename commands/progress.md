@@ -51,7 +51,7 @@ Status checker and router. Query feature status from design docs, report progres
    - ...
    ```
 
-8. **Check for review analytics** — read `.claude/review-analytics.json` at the consumer project root
+8. **Check for review analytics** — read `.project-orchestrator/review-analytics.json` at the consumer project root
    - If the file does not exist → skip this section silently (no error, no message)
    - If it exists, parse the `summary` object and append to the report:
      ```
@@ -97,7 +97,7 @@ Status checker and router. Query feature status from design docs, report progres
    Tasks: {pending} pending | {in-progress} in-progress | {complete} complete | {reviewed} reviewed
    ```
 
-5. **Check for review analytics** — read `.claude/review-analytics.json` at the consumer project root
+5. **Check for review analytics** — read `.project-orchestrator/review-analytics.json` at the consumer project root
    - If the file does not exist → skip this section silently (no error, no message)
    - If it exists, parse the `summary` object and append to the report:
      ```
@@ -136,6 +136,6 @@ Status checker and router. Query feature status from design docs, report progres
 - [ ] MCP tools called first (graceful fallback to manual parsing)
 - [ ] Status reported with task counts
 - [ ] Recent activity shown (MCP path only)
-- [ ] Review analytics summary shown if `.claude/review-analytics.json` exists (silently skipped if missing)
+- [ ] Review analytics summary shown if `.project-orchestrator/review-analytics.json` exists (silently skipped if missing)
 - [ ] Next action suggested based on current state
 </success_criteria>

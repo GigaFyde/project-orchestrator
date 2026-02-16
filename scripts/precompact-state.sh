@@ -14,7 +14,7 @@ PLAN_PATH="${CLAUDE_PROJECT_DIR}/${ACTIVE_PLAN}"
 [ -f "$PLAN_PATH" ] || exit 0
 
 # Read state file for team info
-STATE_FILE="${CLAUDE_PROJECT_DIR}/.claude/orchestrator-state.json"
+STATE_FILE="${CLAUDE_PROJECT_DIR}/.project-orchestrator/state.json"
 TEAM=$(jq -r '.team // empty' "$STATE_FILE" 2>/dev/null)
 SLUG=$(jq -r '.slug // empty' "$STATE_FILE" 2>/dev/null)
 

@@ -24,7 +24,7 @@ Configuration/infra (plugin skill/command improvements)
 
 **Problem:** When MCP is unavailable, scope file creation is skipped entirely. Agents hit permission prompts on their first Edit/Write, blocking work until the lead manually creates the scope file.
 
-**Solution:** Replace the "skip entirely" fallback with a direct `Write` to `.claude/hooks/scopes/{team-name}.json`. The scope file format is simple JSON — no MCP needed.
+**Solution:** Replace the "skip entirely" fallback with a direct `Write` to `.project-orchestrator/scopes/{team-name}.json`. The scope file format is simple JSON — no MCP needed.
 
 **Change to step 6b:**
 ```
@@ -37,8 +37,8 @@ Configuration/infra (plugin skill/command improvements)
    - Build scope JSON matching the hook's expected schema:
      - "shared" array: all service directory paths (relative to project root)
      - Per-agent keys added later when spawning workers (step 7) if task-specific scoping needed
-   - Write `.claude/hooks/scopes/{team-name}.json` via Write tool
-   - Ensure `.claude/hooks/scopes/` directory exists before writing
+   - Write `.project-orchestrator/scopes/{team-name}.json` via Write tool
+   - Ensure `.project-orchestrator/scopes/` directory exists before writing
 
    Scope file format (must match scope-protection.sh expectations):
    {
@@ -148,16 +148,16 @@ Blocking issue:
 **Updated steps with explicit error matrix:**
 ```
 6. Write orchestrator state file
-   - Ensure .claude/ directory exists before writing
-   - Write `.claude/orchestrator-state.json` with: active_plan, slug, team, started, worktrees
+   - Ensure .project-orchestrator/ directory exists before writing
+   - Write `.project-orchestrator/state.json` with: active_plan, slug, team, started, worktrees
    - Atomic write via temp file then mv
    - If write fails: report error, exit (no cleanup needed — team doesn't exist yet)
 
 6a. Create implementation team
    TeamCreate("implement-{slug}")
    - If TeamCreate fails:
-     - Delete `.claude/orchestrator-state.json` (clean up the state file from step 6)
-     - Leave `.claude/` directory intact (may be used by other hooks/state)
+     - Delete `.project-orchestrator/state.json` (clean up the state file from step 6)
+     - Leave `.project-orchestrator/` directory intact (may be used by other state files)
      - Report error to user, exit
 ```
 

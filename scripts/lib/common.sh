@@ -52,7 +52,7 @@ is_hook_enabled() {
 # Read the active plan path from orchestrator state
 # Returns empty string if no active plan
 get_active_plan() {
-  local state="${CLAUDE_PROJECT_DIR}/.claude/orchestrator-state.json"
+  local state="${CLAUDE_PROJECT_DIR}/.project-orchestrator/state.json"
   [ -f "$state" ] || { echo ""; return; }
   jq -r '.active_plan // empty' "$state" 2>/dev/null
 }

@@ -154,7 +154,7 @@ Review the full implementation diff against its design doc. Run spec + quality r
 8. **Update living state doc** — update Spec/Quality columns for all tasks based on holistic review result.
    Suggest next steps: `/project:verify` then `/project:finish`
 
-9. **Write analytics entry** — append to `.claude/review-analytics.json` at the consumer project root.
+9. **Write analytics entry** — append to `.project-orchestrator/review-analytics.json` at the consumer project root.
 
    Read the existing file (create with `{"reviews": [], "summary": {}}` if missing), then append:
 
@@ -202,7 +202,7 @@ Review the full implementation diff against its design doc. Run spec + quality r
 
    **Model accuracy tracking:** Update when findings are resolved (fixed = true_positive, dismissed = false_positive for the model that flagged it).
 
-   Write the updated JSON back to `.claude/review-analytics.json`.
+   Write the updated JSON back to `.project-orchestrator/review-analytics.json`.
 </process>
 
 <success_criteria>
@@ -212,6 +212,6 @@ Review the full implementation diff against its design doc. Run spec + quality r
 - [ ] Egregious issues offered for auto-fix (with user approval)
 - [ ] Ambiguous issues presented for user decision
 - [ ] Living state doc updated with review results
-- [ ] Analytics entry written to `.claude/review-analytics.json`
+- [ ] Analytics entry written to `.project-orchestrator/review-analytics.json`
 - [ ] User told next steps (`/project:verify`, `/project:finish`)
 </success_criteria>

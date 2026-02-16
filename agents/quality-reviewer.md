@@ -24,7 +24,7 @@ These files are NOT inherited from the parent session. You must read them yourse
 
 ## Memory Structure
 
-Your memory directory is `.claude/agent-memory/project-orchestrator-quality-reviewer/`. Maintain this structure:
+Your memory directory is `.project-orchestrator/agent-memory/quality-reviewer/`. Maintain this structure:
 
 ```
 MEMORY.md                    # index — review count, key cross-review learnings
