@@ -83,6 +83,39 @@ Run the test command for your service:
 
 If tests fail, fix before reporting.
 
+**Build/test failure reporting (MANDATORY):**
+
+If build or tests fail, you MUST send a progress report to the lead
+via SendMessage BEFORE attempting any fix. Use this format:
+
+```
+Task: {task number and title}
+Status: build-failed
+
+Command: {the build/test command that was run}
+Error (last 50 lines):
+{paste error output here}
+
+Next: {what you plan to try, or "investigating"}
+```
+
+Then continue trying to fix the issue. Send updated reports after
+each fix attempt. Only go idle if truly stuck — but ALWAYS send
+a final status message before going idle, even if it's just:
+
+```
+Task: {task number and title}
+Status: stuck
+
+Last error:
+{paste error output here}
+
+Tried: {what you attempted}
+```
+
+NEVER go idle without sending at least one message to the lead.
+This is the lead's only window into your build state.
+
 ## Self-Review Checklist
 
 Before reporting, verify:
@@ -135,6 +168,8 @@ Blocking issue:
 ```
 
 ## Reporting to Lead
+
+**IMPORTANT:** Build error reports (see Testing section) are mandatory even before the final completion report. The lead cannot see your build output — your messages are the only visibility into build/test failures. If you hit errors, report them immediately via SendMessage, then continue fixing. The completion report below is for when you're done.
 
 **Step 1: Update task with metadata** — call `TaskUpdate` with status and metadata in a single call:
 
