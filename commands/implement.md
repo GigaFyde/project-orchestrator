@@ -183,7 +183,11 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 9. **Post-implementation review** (unless `--no-review`):
 
-   After ALL implementation tasks are complete, run `/project:review` against the full implementation diff. This is a holistic diff-based review (spec + quality in parallel), not per-task. See `/project:review` for the full process.
+   After ALL implementation tasks are complete, invoke the review skill:
+   ```
+   Skill(project-orchestrator:review, args: "{path to design doc}")
+   ```
+   **You MUST use the `project-orchestrator:review` skill via the Skill tool.** Do NOT use generic code-review agents, the `feature-dev:code-reviewer`, or any other review mechanism. The review skill spawns the plugin's own spec-reviewer and quality-reviewer agents with the correct parallel/single strategy from project config.
 
    - If review passes: proceed to completion
    - If review finds egregious issues: offer to fix with user approval, then re-review
