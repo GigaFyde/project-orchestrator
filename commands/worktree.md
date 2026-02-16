@@ -17,7 +17,7 @@ Use cases:
 </context>
 
 <process>
-1. Parse project config (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. Parse project config (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 2. Determine the plan slug:
    - If user provided `[slug]` argument: use it
    - If not: scan `{config.plans_dir}/` for design docs with status `designing` or `approved`

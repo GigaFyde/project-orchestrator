@@ -38,7 +38,7 @@ Create `.project-orchestrator/project.yml` in your project root. All fields are 
 ### Full Schema
 
 ```yaml
-# .claude/project.yml
+# .project-orchestrator/project.yml
 name: my-project
 
 # Repo structure
@@ -168,7 +168,7 @@ The plugin ships 4 opt-in hooks that improve orchestration quality during `/proj
 Enable hooks in `.project-orchestrator/project.yml`:
 
 ```yaml
-# .claude/project.yml
+# .project-orchestrator/project.yml
 hooks:
   task_verification: "agent"    # "agent" | "prompt" | "off" (default: off)
   stop_guard: true              # default: false
