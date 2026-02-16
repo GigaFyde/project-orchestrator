@@ -2,6 +2,10 @@
 
 Full-lifecycle project orchestration plugin for Claude Code. Turns feature ideas into designs and implementations using parallel teams, two-stage review, and living state documents.
 
+## Why?
+
+Inspired by [obra's superpowers](https://github.com/anthropics/claude-code-superpowers) and [GSD](https://github.com/gsd-build/get-shit-done), this plugin is my own take on structured AI-driven development. It adds multi-service orchestration, parallel agent teams, dual-model code review, and living design documents that survive context clears — giving you a repeatable workflow from idea to merged PR.
+
 ## Installation
 
 ### Via Marketplace (Recommended)
@@ -29,56 +33,47 @@ Both methods work identically. The marketplace approach provides a central disco
 
 ## Quick Start
 
-Here's a minimal workflow to see the plugin in action:
+1. **Set up your project** — ask Claude to generate a config for you:
 
-1. **Create a simple project config** (optional but recommended):
-
-```yaml
-# .project-orchestrator/project.yml
-name: my-project
-structure: monorepo
-services:
-  - name: api
-    path: ./
+```
+Generate a .project-orchestrator/project.yml config for this project
 ```
 
-2. **Start brainstorming:**
+Claude will analyze your repo structure and create an appropriate config. This step is optional — the plugin works without config using sensible defaults.
+
+2. **Brainstorm a feature:**
 
 ```
 /project:brainstorm Add user authentication with JWT tokens
 ```
 
-Claude will explore your codebase, ask clarifying questions, and create a design document in `docs/plans/`.
+Claude explores your codebase, asks clarifying questions, and produces a design document in `docs/plans/` with implementation tasks, dependencies, and a wave plan.
 
-3. **Review the design doc** and when ready, implement it:
+3. **Review the design** (optional, but highly recommended):
+
+```
+/project:review-design
+```
+
+Runs a two-stage design review: spec completeness and feasibility. In practice, this regularly catches ambiguities and edge cases that should be clarified before agents start working — and with LLMs, clearer instructions mean less drift. Fixing a vague spec is far cheaper than course-correcting multiple agents mid-implementation.
+
+4. **Implement:**
 
 ```
 /project:implement
 ```
 
-This spawns parallel implementer agents that work through the tasks defined in your design doc. Each agent:
-- Reads the task requirements
-- Implements the changes
-- Runs tests
-- Commits the work
-- Reports completion
+Spawns parallel agents that each pick up a task, implement it, run tests, commit, and report back. Independent tasks run simultaneously in waves.
 
-4. **Review the implementation:**
+5. **Review, verify, and finish:**
 
 ```
 /project:review
-```
-
-This runs a two-stage review process: spec compliance first, then code quality (using parallel models for comprehensive coverage).
-
-5. **Verify and finish:**
-
-```
 /project:verify
 /project:finish
 ```
 
-That's it! The plugin handles context management, parallelization, and state tracking across the entire lifecycle.
+Two-stage code review (spec compliance + quality), evidence-based verification, then merge or PR.
 
 ## Commands
 
@@ -204,14 +199,6 @@ brainstorm:
 | `brainstorm.designer_perspectives` | `[simplicity, scalability]` | Balanced design trade-offs |
 | `brainstorm.perspective_docs` | `{}` (empty) | Optional doc injection |
 
-### Model Precedence
-
-- `models.explorer` → used when spawning explorer agents
-- `models.implementer` → used when spawning implementer agents
-- `review.strategy` + `review.parallel_models` / `review.single_model` → controls reviewer models
-- Review config is separate from role models — `models.*` does NOT control reviewers
-- Agent `.md` files have static `model:` defaults in frontmatter — the Task tool's `model:` parameter overrides when provided via config
-
 ### No Config (Zero-Config Mode)
 
 Without `project.yml`, the plugin assumes:
@@ -291,17 +278,6 @@ The plugin includes a reference implementation for file-scope enforcement via Pr
 
 See the example README for setup instructions, scope file format, and `hooks.json` snippet.
 
-## Config Loading
-
-Every skill/command begins with:
-
-1. Check if `.project-orchestrator/project.yml` exists
-2. If yes: parse, validate, extract services/paths/test commands
-3. If no: use defaults (monorepo, root, auto-detect)
-4. Check for architecture docs: read if present
-5. Ensure `plans_dir` exists (create if missing on write operations)
-6. Proceed with project-aware context
-
 ## MCP Integration (Optional)
 
 This plugin optionally integrates with Model Context Protocol (MCP) tools for enhanced state management and coordination. **All MCP features have graceful fallbacks** — the plugin works 100% without MCP installed.
@@ -361,23 +337,6 @@ No functionality is lost — MCP simply enhances the experience with better stat
     ↓
 /project:changelog → standardized entries
 ```
-
-## Coexistence with Superpowers
-
-This plugin coexists with the `superpowers` plugin:
-- **Different prefixes:** `/project:brainstorm` vs `/brainstorm`
-- **Different skill names:** `project-orchestrator:brainstorming` vs `superpowers:brainstorming`
-- **Use superpowers** for simple, single-file features
-- **Use project-orchestrator** for multi-service orchestration with teams
-
-## Auto-Approve Integration
-
-For projects that use permission hooks (auto-approve systems), the `implement` command supports optional scope file creation via MCP tools. If your project has a `create_scope()` MCP tool, it will be called automatically. Otherwise, scope management is skipped gracefully.
-
-To set up auto-approve hooks for your project, configure:
-1. A PreToolUse hook that reads scope files
-2. Scope files at `.project-orchestrator/scopes/{team}.json`
-3. An MCP tool or manual process to create/delete scope files per implementation wave
 
 ## Review System v2
 
@@ -482,7 +441,7 @@ Review results are tracked in `.project-orchestrator/review-analytics.json` at t
       "date": "2026-02-14",
       "feature": "core-standardization",
       "task": 2,
-      "service": "toraka-core",
+      "service": "my-api",
       "strategy": "parallel",
       "models": ["haiku", "sonnet"],
       "stage": "spec",
@@ -510,7 +469,7 @@ Review results are tracked in `.project-orchestrator/review-analytics.json` at t
       "sonnet": { "true_positive": 20, "false_positive": 1, "missed": 2 }
     },
     "by_service": {
-      "toraka-core": { "reviews": 6, "common_issues": ["missing subscribeOn"] }
+      "my-api": { "reviews": 6, "common_issues": ["missing error handling"] }
     }
   }
 }
