@@ -100,7 +100,38 @@ For each service in the affected services list:
 - Ask: "Setup failed for {service}. Continue without setup, or abort worktree creation?"
 - If abort: clean up with `git worktree remove --force {worktree_path}` and report failure to caller
 
-### 5. Record in Living State Doc
+### 5. Post-Setup Verification
+
+For each affected service, verify the worktree is usable:
+
+```
+For each service in the affected services list:
+  service_path = config.services[name].path or name
+  service_dir = {worktree_path}/{service_path}
+
+  1. Verify directory exists: ls {service_dir}
+     - Fail message: "Service directory {service_dir} not found in worktree"
+
+  2. Verify git is healthy: cd {worktree_path} && git status --porcelain
+     - Should not error. Output content is fine (unstaged changes are expected).
+
+  3. Verify setup artifacts (Node projects only):
+     - If package.json exists in {service_dir}: check node_modules/ exists
+       AND is non-empty (contains at least one subdirectory)
+     - Fail message: "node_modules/ missing or empty — package install may
+       have failed silently. Try re-running setup."
+     - For all other ecosystems: skip artifact verification.
+       Setup command exit code is sufficient.
+
+  4. If any check fails:
+     - Report the error to the user
+     - Ask: "Continue with potentially broken worktree, re-run setup,
+       or abort worktree creation?"
+     - If abort: clean up with `git worktree remove --force {worktree_path}`
+       and report failure to caller
+```
+
+### 6. Record in Living State Doc
 
 Append to the design doc (before the `---` separator or at the end):
 
@@ -110,7 +141,7 @@ Append to the design doc (before the `---` separator or at the end):
 - **Branch:** feature/{slug}
 ```
 
-### 6. Return Result
+### 7. Return Result
 
 Return the absolute worktree path to the caller.
 
@@ -161,9 +192,33 @@ If setup_cmd:
 
 Collect all setup failures — do NOT prompt per-service.
 
+#### d. Post-Setup Verification (per service)
+
+After setup completes for a service, verify the worktree is usable:
+
+```
+service_dir = {worktree_path}
+
+1. Verify directory exists: ls {service_dir}
+   - Fail message: "Service directory {service_dir} not found in worktree"
+
+2. Verify git is healthy: cd {worktree_path} && git status --porcelain
+   - Should not error. Output content is fine (unstaged changes are expected).
+
+3. Verify setup artifacts (Node projects only):
+   - If package.json exists in {service_dir}: check node_modules/ exists
+     AND is non-empty (contains at least one subdirectory)
+   - Fail message: "node_modules/ missing or empty — package install may
+     have failed silently. Try re-running setup."
+   - For all other ecosystems: skip artifact verification.
+     Setup command exit code is sufficient.
+```
+
+Collect all health check failures — do NOT prompt per-service. These get batched with setup failures in step 2.
+
 ### 2. Handle Failures (Batched)
 
-After processing all services, if any failed (creation or setup), present a single summary:
+After processing all services, if any failed (creation, setup, or health check), present a single summary:
 
 ```
 Worktree creation results:
