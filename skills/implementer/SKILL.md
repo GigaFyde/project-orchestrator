@@ -14,7 +14,7 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
 
 ## Config Loading
 
-1. Check if `.claude/project.yml` exists
+1. Check if `.project-orchestrator/project.yml` exists
 2. If yes: parse and extract `services`, `architecture_docs`, test commands
 3. If no: use defaults (monorepo, root, auto-detect test command)
 
@@ -177,8 +177,8 @@ or service root:
 6. Before committing, verify you're on the correct branch:
    `git branch --show-current` should match what's in the living state doc.
    If not, message the lead immediately.
-7. To reference project config files like `.claude/project.yml`, read from the
-   main project root (the worktree may not have gitignored files like `.claude/`)
+7. To reference project config files like `.project-orchestrator/project.yml`, read from the
+   main project root (the worktree may not have gitignored files like `.project-orchestrator/`)
 
 ## Red Flags — Stop and Ask
 

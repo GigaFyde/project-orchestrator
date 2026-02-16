@@ -16,7 +16,7 @@ Guide completion of development work.
 
 ## Config Loading
 
-1. Check if `.claude/project.yml` exists
+1. Check if `.project-orchestrator/project.yml` exists
 2. If yes: parse and extract `services`, `structure` (polyrepo/monorepo), `plans_dir`, `plans_structure`
 3. If no: use defaults (monorepo, single service at root, `docs/plans/` flat)
 

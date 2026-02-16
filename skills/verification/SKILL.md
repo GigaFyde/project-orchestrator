@@ -16,7 +16,7 @@ Claiming work is complete without verification is dishonesty, not efficiency.
 
 ## Config Loading
 
-1. Check if `.claude/project.yml` exists
+1. Check if `.project-orchestrator/project.yml` exists
 2. If yes: parse and extract `services` (test commands, auto_deploy), `plans_dir`, `plans_structure`
 3. If no: use defaults (monorepo, root, auto-detect test command)
 

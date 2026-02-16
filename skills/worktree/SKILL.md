@@ -17,7 +17,7 @@ This skill expects the caller to provide:
 
 ## Config Loading
 
-1. Check if `.claude/project.yml` exists in the project root
+1. Check if `.project-orchestrator/project.yml` exists in the project root
 2. If yes: parse and extract:
    - `config.structure` — `monorepo` (default) or `polyrepo`
    - `config.worktree.dir` — worktree directory name (default: `.worktrees`)

@@ -16,7 +16,7 @@ Turn feature ideas into designs and implementations. Full lifecycle in one skill
 
 Before anything else, load project config:
 
-1. Check if `.claude/project.yml` exists
+1. Check if `.project-orchestrator/project.yml` exists
 2. If yes: parse and extract `services`, `plans_dir`, `plans_structure`, `architecture_docs`, `implementation`, `models`, `brainstorm`, `review`
 3. If no: use defaults (monorepo, single service at root, `docs/plans/` flat structure)
 4. Read architecture docs if paths configured: `config.architecture_docs.agent`, `config.architecture_docs.domain`

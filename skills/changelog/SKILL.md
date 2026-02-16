@@ -12,7 +12,7 @@ Write standardized changelog entries after completing changes. Focus on WHY not 
 
 ## Config Loading
 
-1. Check if `.claude/project.yml` exists
+1. Check if `.project-orchestrator/project.yml` exists
 2. If yes: use `config.services[name].changelog` for the correct file path
 3. If no: look for `CHANGELOG.md` in the service directory or project root
 
