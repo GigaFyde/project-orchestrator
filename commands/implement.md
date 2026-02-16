@@ -1,7 +1,7 @@
 ---
 name: project:implement
 description: Execute implementation from a design doc — creates team, spawns parallel workers, post-implementation review
-argument-hint: "[plan file path] [--no-review]"
+argument-hint: "[plan file path] [--no-review] [--no-auto-resume]"
 allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, Task, Skill, AskUserQuestion]
 ---
 
@@ -10,7 +10,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 </objective>
 
 <context>
-- `$ARGUMENTS` — plan file path + optional `--no-review` flag
+- `$ARGUMENTS` — plan file path + optional `--no-review` and `--no-auto-resume` flags
 - Project config: @.project-orchestrator/project.yml
 - Plans index: @docs/plans/INDEX.md
 </context>
@@ -51,7 +51,9 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
        - If declined: proceed without worktree (user accepts collision risk)
    - Store worktree info (path or service→path map) for use in step 7
 
-5a. **Check for `--no-review` flag** — if present, skip the post-implementation review pass entirely. Default: review enabled.
+5a. **Check for flags:**
+   - `--no-review` — if present, skip the post-implementation review pass entirely. Default: review enabled.
+   - `--no-auto-resume` — if present, immediately escalate to user on any idle without completion (skip auto-resume). Default: auto-resume enabled.
 
 6. **Write orchestrator state file**
    Write `.project-orchestrator/state.json` so hooks can find the active plan immediately when implementation starts.
@@ -157,27 +159,58 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
        `SendMessage("TASK #2: Add retry logic to R2dbcSupport\n{full description}")`
 
    - **Lead idle detection** — when an implementer goes idle WITHOUT sending a completion report:
-     a) Check `git diff --stat` in the service directory
-     b) Read the task description to understand expected scope
-     c) Incompleteness heuristics — if ANY of these apply, work is likely incomplete:
-        - Only imports added (no logic changes)
-        - Only type definitions or interfaces (no usage)
-        - No tests added when task description mentions "add tests"
-        - Commit message says "WIP" or "partial"
-        - Fewer files changed than task description implies
-     d) If obviously incomplete:
-        - Resume the agent with: "Your work on Task #{N} appears incomplete.
-          Missing: {specific items from task description}. Please continue."
-     e) If plausibly complete but no report was sent:
-        - Resume with: "Please verify your Task #{N} work is complete and
-          send your completion report."
-     f) "Progress" = agent commits new changes (visible in git diff) or sends a
-        completion/progress message. Resume count increments each time the lead
-        sends a resume message and the agent goes idle without progress.
-     g) After 2 resume attempts with no progress:
+
+     **If `--no-auto-resume`:** Skip classification and auto-recovery. Immediately escalate to user:
+     "Task #{N} agent went idle without completion report. Git diff: {summary}. How to proceed?"
+
+     **Otherwise (default — auto-resume enabled):**
+
+     a) **Classify failure** using observable signals (first match wins).
+        For worktree-routed tasks, run all git commands inside the worktree directory, not the project root.
+
+        - **NO_CHANGES** — no new commits on the feature branch since agent spawn
+          (compare HEAD against base commit SHA stored at spawn time) AND
+          `git diff --stat` shows 0 uncommitted changes AND agent sent no
+          progress/blocking message
+          → Resume with: "You haven't made any code changes yet. Start implementing
+            Task #{N} now. Key files to edit: {inferred from task description}.
+            Do not explore further — begin editing."
+
+        - **STALLED** — agent sent a build-failed or stuck message but went idle
+          without resolving
+          → Resume with: "You reported a build/test failure. Here's your last error
+            message: {quote from agent's message}. Fix the issue, re-run build/tests,
+            then send completion report."
+          → Fallback: if no message was sent but git diff shows changes (commits or
+            uncommitted), treat as PARTIAL_WORK instead of NO_CHANGES.
+
+        - **PARTIAL_WORK** — `git diff --stat` shows changes but task is incomplete
+          per these heuristics (if ANY apply, work is likely incomplete):
+          - Only imports added (no logic changes)
+          - Only type definitions or interfaces (no usage)
+          - No tests added when task description mentions "add tests"
+          - Commit message says "WIP" or "partial"
+          - Fewer files changed than task description implies
+          → Resume with specific missing items from task description:
+            "Your work on Task #{N} appears incomplete. Missing: {items}. Please continue."
+          → If in a worktree: include in recovery message: "Before continuing, verify
+            your worktree is healthy: git status should not error."
+          → If plausibly complete but no report: resume with "Please verify your Task #{N}
+            work is complete and send your completion report."
+
+     b) **Progress definition** for retry gating:
+        "Progress" means EITHER new commits since last idle detection (git log comparison)
+        OR agent sent a new message since last idle detection.
+        Compare state between consecutive idle detections, not against initial state.
+
+     c) **Recovery tracking:** Append to the task's Implementation Log entry:
+        `- **Recovery:** {failure_type} (attempt {N})`
+        Only written when recovery occurs. Append-only — does not change existing log format.
+
+     d) **Escalation after failed recovery:** After 2 resume attempts with no progress:
         - Mark task as "blocked" in living state doc
         - Message user: "Task #{N} appears stuck. Agent made no progress after
-          2 resume attempts. Last known state: {git diff summary}.
+          2 resume attempts. Classification: {last failure type}. Last known state: {git diff summary}.
           Options: 1) Manually guide agent, 2) Reassign to new agent,
           3) Skip task and continue with next wave."
         - Wait for user decision before proceeding
