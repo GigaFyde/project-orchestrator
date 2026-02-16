@@ -13,7 +13,9 @@ Run this inside Claude Code to add the marketplace and install the plugin:
 
 **Private repo note:** This requires access to the GitHub repo. Your existing git credentials (e.g., `gh auth login`) are used automatically. For background auto-updates, set `GITHUB_TOKEN` or `GH_TOKEN` in your environment.
 
-(Optional) Create `.claude/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
+(Optional) Create `.project-orchestrator/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
+
+**Breaking change:** If you have an existing `.claude/project.yml` from a previous version, you must move it to `.project-orchestrator/project.yml`. The config file has moved as part of completing the dotfolder migration.
 
 **Recommended:** Add `.project-orchestrator/` to your `.gitignore` — it contains session-specific state (active plan tracker, scope files, review analytics, agent memory) that shouldn't be committed.
 
@@ -31,7 +33,7 @@ Run this inside Claude Code to add the marketplace and install the plugin:
 
 ## Project Config
 
-Create `.claude/project.yml` in your project root. All fields are optional — the plugin uses sensible defaults when config is missing.
+Create `.project-orchestrator/project.yml` in your project root. All fields are optional — the plugin uses sensible defaults when config is missing.
 
 ### Full Schema
 
@@ -103,7 +105,7 @@ brainstorm:
 
 | Condition | Behavior |
 |-----------|----------|
-| Missing `.claude/project.yml` | Defaults: monorepo, single service at root, auto-detect test command |
+| Missing `.project-orchestrator/project.yml` | Defaults: monorepo, single service at root, auto-detect test command |
 | Malformed YAML | Hard error — fix config before proceeding |
 | Missing referenced file (architecture doc, plans dir) | Warn once, skip that step. Auto-create `plans_dir` on first brainstorm |
 | Invalid service path | Error when that service is targeted by a task |
@@ -163,7 +165,7 @@ The plugin ships 4 opt-in hooks that improve orchestration quality during `/proj
 
 ### Configuration
 
-Enable hooks in `.claude/project.yml`:
+Enable hooks in `.project-orchestrator/project.yml`:
 
 ```yaml
 # .claude/project.yml
@@ -231,7 +233,7 @@ See the example README for setup instructions, scope file format, and `hooks.jso
 
 Every skill/command begins with:
 
-1. Check if `.claude/project.yml` exists
+1. Check if `.project-orchestrator/project.yml` exists
 2. If yes: parse, validate, extract services/paths/test commands
 3. If no: use defaults (monorepo, root, auto-detect)
 4. Check for architecture docs: read if present

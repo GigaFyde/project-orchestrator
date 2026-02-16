@@ -1,0 +1,13 @@
+# .project-orchestrator/project.yml
+name: project-orchestrator
+
+# Repo structure
+structure: monorepo
+plans_dir: docs/plans
+plans_structure: flat
+
+# Review configuration
+review:
+  strategy: parallel
+  parallel_models: [haiku, sonnet]
+  single_model: opus

@@ -35,7 +35,7 @@ hook_init() {
 # Usage: read_hook_config "stop_guard" → "true" or ""
 read_hook_config() {
   local key="$1"
-  local config="${CLAUDE_PROJECT_DIR}/.claude/project.yml"
+  local config="${CLAUDE_PROJECT_DIR}/.project-orchestrator/project.yml"
   [ -f "$config" ] || { echo ""; return; }
   # Match "  key: value" under hooks: section — simple grep for "key:" anywhere in file
   grep -E "^[[:space:]]*${key}:" "$config" 2>/dev/null | head -1 | sed 's/.*:[[:space:]]*//' | sed 's/[[:space:]]*$//' | tr -d '"'

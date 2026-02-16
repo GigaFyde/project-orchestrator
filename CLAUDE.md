@@ -25,13 +25,13 @@ docs/plans/                   # Design docs (active plans + completed/)
 - **Living state doc**: Design docs in `docs/plans/` that get updated as implementation progresses (status, assignees, review results)
 - **Wave-based implementation**: Independent tasks run in parallel waves; dependent tasks are sequenced
 - **Two-stage review**: Spec compliance first, then code quality — each can use parallel or single model strategy
-- **Project config**: Consumer projects configure via `.claude/project.yml` (optional — sensible defaults without it)
+- **Project config**: Consumer projects configure via `.project-orchestrator/project.yml` (optional — sensible defaults without it)
 - **Context boundaries**: `/clear`, subagent spawns, and skill invocations all lose conversation context — skills must be self-sufficient
 
 ## Conventions
 
 - All component files are Markdown with YAML frontmatter
-- Skills reference config values like `config.models.implementer` — these come from the consumer's `.claude/project.yml`
+- Skills reference config values like `config.models.implementer` — these come from the consumer's `.project-orchestrator/project.yml`
 - MCP tool calls (Dev-MCP) are always wrapped in graceful failure — the plugin works without MCP
 - Commands and skills are self-contained for context: they explicitly instruct reading needed files because `/clear` and subagent spawns lose conversation context
 
@@ -49,7 +49,7 @@ docs/plans/                   # Design docs (active plans + completed/)
 - **Test changes by using the plugin** — install in a consumer project and run the commands
 
 ### Config Schema
-- **Config lives in the consumer project** (`.claude/project.yml`), not in this repo
+- **Config lives in the consumer project** (`.project-orchestrator/project.yml`), not in this repo
 - **All config fields are optional** — skills must handle missing config gracefully with defaults
 - **`review.*` config is separate from `models.*`** — reviewer models come from review config, not the general models section
 
