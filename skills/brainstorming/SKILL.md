@@ -209,7 +209,23 @@ All report via TaskUpdate. Skip for single-service features.
 - Create `{config.plans_dir}/YYYY-MM-DD-{slug}-design.md` using strict template
 - Set status to `designing`
 - Fill in Design section using templates below
-- If `config.plans_structure` is `standard`: add entry to `{config.plans_dir}/INDEX.md` under "Active"
+- If config.plans_structure is `standard`: add entry to {config.plans_dir}/INDEX.md under "## Active"
+  Format: `- [{Feature Name}]({filename}) — {one-line summary}`
+  Example: `- [Orchestrator Fixes](2026-02-16-orchestrator-impl-fixes-design.md) — Improve agent completeness gates and task messaging`
+
+  If INDEX.md doesn't exist, create it with this structure:
+    # Plans Index
+
+    ## Active
+    - [{Feature Name}]({filename}) — {one-line summary}
+
+    ## Completed
+
+    ## Backlog
+
+    ## Ideas
+
+  If "## Active" section exists, add the entry at the top of that section (newest first).
 - Present design to user
 
 ## 11. Persist state and hand off (Dev-MCP)

@@ -61,16 +61,47 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
      - No worktrees: `{}`
    - **Atomic write:** Write to a temp file first (`.claude/orchestrator-state.json.tmp`), then `mv` to final path to prevent read-during-write corruption
    - Ensure `.claude/` directory exists before writing
+   - **If write fails:** Report error to user and exit — no cleanup needed (team doesn't exist yet)
 
 6a. **Create implementation team**
    ```
    TeamCreate("implement-{slug}")
    ```
-   - **If TeamCreate fails:** Delete `.claude/orchestrator-state.json` (clean up the state file written in step 6), then report the error to the user
+   - **If TeamCreate fails:**
+     - Delete `.claude/orchestrator-state.json` (clean up the state file from step 6)
+     - Leave `.claude/` directory intact (may be used by other hooks/state)
+     - Report error to user, exit
 
-6b. **Create scope file for auto-approve hook (optional)**
-   - Try MCP: `create_scope(team, services, wave)` — graceful fail if unavailable
-   - Fallback: Skip scope file creation entirely
+6b. **Create scope file for auto-approve hook**
+   - Extract service names from design doc's "Services Affected"
+   - For each service:
+     - If config.services exists: look up service.path for the directory
+     - If no config: use service name as relative path (monorepo default)
+     - If worktrees active (from step 5.5): use worktree paths instead of service paths
+   - Build scope JSON matching the hook's expected schema:
+     - `"shared"` array: all service directory paths (relative to project root)
+     - Per-agent keys added later when spawning workers (step 7) if task-specific scoping needed
+   - Write `.claude/hooks/scopes/{team-name}.json` via Write tool
+   - Ensure `.claude/hooks/scopes/` directory exists before writing
+   - Try MCP `create_scope(team, services, wave)` as optimization — but the Write approach above is the primary path
+
+   Scope file format (must match scope-protection.sh expectations):
+   ```json
+   {
+     "team": "{team-name}",
+     "shared": ["service1/", "service2/"]
+   }
+   ```
+
+   Per-agent scoping (optional, added during step 7 if tasks have specific file lists):
+   ```json
+   {
+     "team": "{team-name}",
+     "shared": ["service1/", "service2/"],
+     "implement-t1": ["service1/src/specific/path/"],
+     "implement-t2": ["service2/src/specific/path/"]
+   }
+   ```
 
 7. **Create tasks and spawn workers**
    - Create TaskCreate entries with dependencies (addBlockedBy for dependent tasks)
@@ -102,6 +133,53 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 8. **Handle task completion** — when an implementer reports via SendMessage:
    - Update living state doc — mark task as `complete`, log implementer report
    - Check if blocked tasks are now unblocked, start next wave
+   - **Task assignment messaging rules:**
+     a) Never combine "task done ack" + "new task assignment" in one SendMessage call
+     b) Skip the acknowledgment entirely — just send the new task assignment
+     c) Include the full task description from TaskGet({task-id}).description
+     d) Format (single SendMessage call, no preceding ack):
+        ```
+        "TASK #{N}: {task title}
+         {full task description}"
+        ```
+     e) When starting a new wave: send individual task assignments (one SendMessage per agent)
+     f) If no more tasks for this agent, send shutdown request
+
+     WRONG — combined ack + assignment in one message:
+       `SendMessage("Task 1 done, good work. Now do Task 2: ...")`
+
+     WRONG — ack followed by assignment as separate messages:
+       `SendMessage("Task 1 confirmed.")`
+       `SendMessage("Now do Task 2: ...")`
+
+     RIGHT — assignment only, no ack:
+       `SendMessage("TASK #2: Add retry logic to R2dbcSupport\n{full description}")`
+
+   - **Lead idle detection** — when an implementer goes idle WITHOUT sending a completion report:
+     a) Check `git diff --stat` in the service directory
+     b) Read the task description to understand expected scope
+     c) Incompleteness heuristics — if ANY of these apply, work is likely incomplete:
+        - Only imports added (no logic changes)
+        - Only type definitions or interfaces (no usage)
+        - No tests added when task description mentions "add tests"
+        - Commit message says "WIP" or "partial"
+        - Fewer files changed than task description implies
+     d) If obviously incomplete:
+        - Resume the agent with: "Your work on Task #{N} appears incomplete.
+          Missing: {specific items from task description}. Please continue."
+     e) If plausibly complete but no report was sent:
+        - Resume with: "Please verify your Task #{N} work is complete and
+          send your completion report."
+     f) "Progress" = agent commits new changes (visible in git diff) or sends a
+        completion/progress message. Resume count increments each time the lead
+        sends a resume message and the agent goes idle without progress.
+     g) After 2 resume attempts with no progress:
+        - Mark task as "blocked" in living state doc
+        - Message user: "Task #{N} appears stuck. Agent made no progress after
+          2 resume attempts. Last known state: {git diff summary}.
+          Options: 1) Manually guide agent, 2) Reassign to new agent,
+          3) Skip task and continue with next wave."
+        - Wait for user decision before proceeding
 
 9. **Post-implementation review** (unless `--no-review`):
 

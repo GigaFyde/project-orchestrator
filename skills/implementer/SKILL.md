@@ -79,6 +79,43 @@ Before reporting, verify:
 
 If self-review finds issues, fix them before reporting.
 
+## Completeness Verification (before reporting or going idle)
+
+Before marking your task complete or going idle, run this verification:
+
+1. Re-read your task description from the living state doc
+2. Run `git diff --stat` to see what you actually changed
+3. Compare your changes against EVERY item in the task description
+4. If ANY item is missing or incomplete:
+   - Continue working — do NOT go idle with partial changes
+   - If you're blocked on something specific, send a progress report (see format below)
+5. Only proceed to TaskUpdate + SendMessage when ALL items are fully implemented
+
+CRITICAL: Do NOT stop generating output until either:
+- Your task is 100% complete (all items implemented), OR
+- You have sent a detailed progress message to the lead
+
+If blocked, keep the conversation active — prompt the lead until unblocked or
+told to stop. Never go idle silently with partial work.
+
+## Progress Report (when blocked or incomplete)
+
+If you cannot complete your full task, send this via SendMessage BEFORE going idle:
+
+```
+Task: {task number and title}
+Status: in-progress (blocked | needs-clarification)
+
+Completed so far:
+- {what you finished}
+
+Still missing:
+- {what remains from the task description}
+
+Blocking issue:
+- {what's stopping you — permission prompt, unclear spec, dependency, etc.}
+```
+
 ## Reporting to Lead
 
 **Step 1: Update task with metadata** — call `TaskUpdate` with status and metadata in a single call:
