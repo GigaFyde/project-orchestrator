@@ -31,7 +31,7 @@ hook_init() {
 }
 
 # Read a simple key from project.yml using grep (no YAML parser needed)
-# Supports flat keys like "stop_guard: true" and nested keys like "task_verification: agent"
+# Supports flat keys like "stop_guard: true" and nested keys like "session_context: true"
 # Usage: read_hook_config "stop_guard" → "true" or ""
 read_hook_config() {
   local key="$1"
