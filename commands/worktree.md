@@ -13,7 +13,7 @@ Use cases:
 </objective>
 
 <context>
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 </context>
 
 <process>

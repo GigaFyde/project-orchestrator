@@ -11,12 +11,12 @@ Design review orchestrator. Find a design doc and run two-stage review (spec com
 
 <context>
 - `$ARGUMENTS` — plan file path (optional, defaults to latest design doc)
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 - Plans index: @docs/plans/INDEX.md
 </context>
 
 <process>
-1. **Parse project config** (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. **Parse project config** (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 
 2. **Find the design doc**
    - If a plan file path was provided in arguments, use it
@@ -24,7 +24,7 @@ Design review orchestrator. Find a design doc and run two-stage review (spec com
    - If no design doc exists, tell the user: "No design doc found. Nothing to review."
    - If the design doc status is already `reviewed` or `implementing`, tell the user and ask if they want to re-review
 
-3. **Read review config** from `.claude/project.yml`:
+3. **Read review config** from `.project-orchestrator/project.yml`:
    - `review.strategy`: `parallel` (default) or `single`
    - `review.parallel_models`: list of exactly 2 models (default: `[haiku, sonnet]`)
    - `review.single_model`: single model (default: `opus`)

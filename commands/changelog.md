@@ -10,11 +10,11 @@ Changelog entry creation via the changelog skill. Ensures standardized format, c
 
 <context>
 - `$ARGUMENTS` — service name (optional, will detect from recent git activity if omitted)
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 </context>
 
 <process>
-1. Parse project config (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. Parse project config (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 2. Invoke the `project-orchestrator:changelog` skill to create changelog entries
 3. If a service name was provided, add the changelog entry for that service using `config.services[name].changelog`
 4. Otherwise, check recent git activity to identify which services were changed and ask the user which to update

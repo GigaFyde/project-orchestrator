@@ -8,11 +8,11 @@ Evidence-based verification via the verification skill. Ensures tests pass, cont
 </objective>
 
 <context>
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 </context>
 
 <process>
-1. Parse project config (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. Parse project config (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 2. Find the active design doc in `{config.plans_dir}/`
 3. **Worktree detection** — check the design doc for worktree sections:
 

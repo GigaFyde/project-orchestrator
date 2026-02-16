@@ -9,7 +9,7 @@ Status checker and router. Query feature status from design docs, report progres
 </objective>
 
 <context>
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 - Plans index: @docs/plans/INDEX.md
 </context>
 
@@ -17,7 +17,7 @@ Status checker and router. Query feature status from design docs, report progres
 
 ## Primary: MCP-powered approach
 
-1. **Parse project config** (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. **Parse project config** (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 
 2. **Find active features** — call `list_features(status: "active")`
    - If MCP call fails or returns error → jump to **Fallback** below

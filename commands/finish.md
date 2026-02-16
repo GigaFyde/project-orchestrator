@@ -11,11 +11,11 @@ Branch finishing via the finishing-branch skill. Handles git repos, auto-deploy 
 
 <context>
 - `$ARGUMENTS` — service name (optional, will detect from git/MCP status if omitted)
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 </context>
 
 <process>
-1. **Parse project config** (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. **Parse project config** (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
 
 2. **Identify affected services** (if no service name provided):
    - Call `list_branches(pattern: "feature/*")` → aggregate branches across all repos (if MCP available)

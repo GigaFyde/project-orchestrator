@@ -10,12 +10,12 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
 
 <context>
 - `$ARGUMENTS` — plan file path + optional `--no-review` flag
-- Project config: @.claude/project.yml
+- Project config: @.project-orchestrator/project.yml
 - Plans index: @docs/plans/INDEX.md
 </context>
 
 <process>
-1. **Parse project config** (auto-loaded via @.claude/project.yml, use defaults if missing)
+1. **Parse project config** (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
    - Extract `models.implementer` (default: opus) for spawning implementer agents
    - Extract `review.strategy`, `review.parallel_models`, `review.single_model` for post-implementation review
 2. Read architecture docs if configured
