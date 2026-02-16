@@ -1,5 +1,5 @@
 .DS_Store
 .obsidian/
 
-# Design docs are local development artifacts, not distributed with the plugin
-docs/plans/
+# Docs are local development artifacts, not distributed with the plugin
+docs/

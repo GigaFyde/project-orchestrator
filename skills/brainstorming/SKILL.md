@@ -45,8 +45,8 @@ Before anything else, load project config:
 | Explorers | `config.models.explorer` (default: sonnet) | explorer agent (brainstorm team) | One per service, report to lead only |
 | Designers | Opus | Team member (brainstorm team) | From `config.brainstorm.designer_perspectives` (default: ["simplicity", "scalability"]) |
 | Implementers | `config.models.implementer` (default: opus) | implementer agent (implement team) | Max `config.implementation.max_parallel` (default 3) parallel |
-| Spec reviewer | Per `config.review.strategy` | spec-reviewer agent | One-shot per task, `Read ~/project-orchestrator/skills/spec-reviewer/SKILL.md` |
-| Quality reviewer | Per `config.review.strategy` | quality-reviewer agent | One-shot per task, `Read ~/project-orchestrator/skills/quality-reviewer/SKILL.md` |
+| Spec reviewer | Per `config.review.strategy` | spec-reviewer agent | One-shot per task, skill auto-loaded via agent frontmatter |
+| Quality reviewer | Per `config.review.strategy` | quality-reviewer agent | One-shot per task, skill auto-loaded via agent frontmatter |
 
 - **Never run agents in background** — always foreground
 - **Team naming:** `brainstorm-{feature-slug}` / `implement-{feature-slug}`

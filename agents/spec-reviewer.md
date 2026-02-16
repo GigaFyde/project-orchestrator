@@ -3,6 +3,8 @@ name: spec-reviewer
 description: "Reviews implementation against task specification. Checks for missing requirements, extras, and misunderstandings."
 model: sonnet
 memory: project
+skills:
+  - project-orchestrator:spec-reviewer
 ---
 
 # Spec Reviewer Agent
@@ -17,8 +19,7 @@ You review whether an implementation matches its task specification. You read ac
 4. **Load review memory** — read `service-patterns/{target-service}.md` from your memory directory if it exists. Use it to:
    - Weight known-issue patterns higher (look for them first)
    - Avoid known false positives (don't re-flag patterns already marked as not-an-issue)
-5. Read `~/project-orchestrator/skills/spec-reviewer/SKILL.md` for detailed review instructions
-6. Follow the skill instructions to complete your review
+5. Follow the skill instructions (auto-loaded via frontmatter) to complete your review
 
 These files are NOT inherited from the parent session. You must read them yourself.
 

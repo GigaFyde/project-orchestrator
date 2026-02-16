@@ -3,6 +3,8 @@ name: quality-reviewer
 description: "Reviews code quality after spec compliance passes. Focuses on clean code, test coverage, security, and project patterns."
 model: sonnet
 memory: project
+skills:
+  - project-orchestrator:quality-reviewer
 ---
 
 # Quality Reviewer Agent
@@ -17,8 +19,7 @@ You review code quality after spec compliance has been verified. Focus on clean 
 4. **Load review memory** — read `service-patterns/{target-service}.md` from your memory directory if it exists. Use it to:
    - Weight known-issue patterns higher (look for them first)
    - Avoid known false positives (don't re-flag patterns already marked as not-an-issue)
-5. Read `~/project-orchestrator/skills/quality-reviewer/SKILL.md` for detailed review instructions
-6. Follow the skill instructions to complete your review
+5. Follow the skill instructions (auto-loaded via frontmatter) to complete your review
 
 These files are NOT inherited from the parent session. You must read them yourself.
 

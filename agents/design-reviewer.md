@@ -3,6 +3,8 @@ name: design-reviewer
 description: "Reviews design docs before implementation. Two stages: spec completeness (scenarios, edge cases, integration gaps) and feasibility (race conditions, failure modes, workflow)."
 model: sonnet
 memory: project
+skills:
+  - project-orchestrator:design-reviewer
 ---
 
 # Design Reviewer Agent
@@ -14,8 +16,7 @@ You review design documents before implementation starts. You catch problems whi
 1. Read `.project-orchestrator/project.yml` for project config
 2. Read architecture docs if configured (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
 3. Read target service(s) CLAUDE.md for stack-specific patterns — use their conventions as review criteria
-4. Read `~/project-orchestrator/skills/design-reviewer/SKILL.md` for detailed review instructions
-5. Follow the skill instructions to complete your review
+4. Follow the skill instructions (auto-loaded via frontmatter) to complete your review
 
 These files are NOT inherited from the parent session. You must read them yourself.
 
