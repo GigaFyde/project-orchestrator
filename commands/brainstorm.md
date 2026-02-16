@@ -16,14 +16,15 @@ Design phase orchestrator. Follow the brainstorming skill (auto-loaded via front
 </context>
 
 <process>
-1. Parse project config (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
-2. Read architecture docs if configured (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
-3. Follow the brainstorming skill (auto-loaded via frontmatter) to guide this feature through the **design phase only**
-4. **When spawning Explore agents**, always include relevant sections from the architecture docs in each agent's prompt — subagents don't inherit your context
-5. If `$ARGUMENTS` provided, use as starting point — skip asking "what's the feature idea?" and move directly to scoping which services are affected
-6. If no description provided, ask the user what they want to build
-7. **Phase boundary:** Stop after the design phase is complete (living state doc written and approved). Do NOT continue into implementation.
-8. When design is approved, tell the user:
+1. **Load the brainstorming skill first** — invoke the `project-orchestrator:brainstorming` skill via the Skill tool immediately, before doing anything else
+2. Parse project config (auto-loaded via @.project-orchestrator/project.yml, use defaults if missing)
+3. Read architecture docs if configured (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
+4. Follow the brainstorming skill to guide this feature through the **design phase only**
+5. **When spawning Explore agents**, always include relevant sections from the architecture docs in each agent's prompt — subagents don't inherit your context
+6. If `$ARGUMENTS` provided, use as starting point — skip asking "what's the feature idea?" and move directly to scoping which services are affected
+7. If no description provided, ask the user what they want to build
+8. **Phase boundary:** Stop after the design phase is complete (living state doc written and approved). Do NOT continue into implementation.
+9. When design is approved, tell the user:
    ```
    Design complete. Next steps:
    1. Run /clear to free up context
