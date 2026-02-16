@@ -130,6 +130,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
        Working directory: {absolute worktree path for this service, or service path}
        Read the living state doc, then cd into the working directory and implement your task.
      ```
+   - **Capture base commit SHA** for idle detection: run `git rev-parse HEAD` in the working directory (worktree or project root) after spawning each agent. Store the SHA per-agent — used later by NO_CHANGES classification to detect whether the agent made any commits.
    - Update living state doc: mark task as `in-progress`, set assignee
    - Wait for each wave to complete before starting the next
 
