@@ -20,6 +20,16 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
 
 ## First Steps
 
+0. **Verify worktree is healthy before starting** (skip if working in main tree):
+   - cd into working directory — if it fails, STOP immediately
+   - Run: `git status --porcelain` (should not error)
+   - Run: `ls {service_path}/` to verify your service directory exists
+   - If ANY check fails: send a BLOCKING message to the lead via SendMessage:
+     "Worktree at {path} appears unhealthy: {error}. Cannot proceed.
+     Please investigate or reassign task to main tree."
+     Then STOP and wait for lead's response.
+     Do NOT attempt work in a broken worktree.
+     Do NOT silently switch to the main tree (lead controls worktree routing).
 1. Read your assigned task from the team TaskList (`TaskGet` your task ID)
 2. Read the living state doc at the path provided in your task description
 3. Check for saved progress: `load_state(prefix: "implement-{slug}-task-{N}")` — resume if found
