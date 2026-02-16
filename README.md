@@ -4,7 +4,7 @@ Full-lifecycle project orchestration plugin for Claude Code. Turns feature ideas
 
 ## Why?
 
-Inspired by [obra's superpowers](https://github.com/anthropics/claude-code-superpowers) and [GSD](https://github.com/gsd-build/get-shit-done), this plugin is my own take on structured AI-driven development. It adds multi-service orchestration, parallel agent teams, dual-model code review, and living design documents that survive context clears — giving you a repeatable workflow from idea to merged PR.
+Inspired by [obra's superpowers](https://github.com/obra/superpowers) and [GSD](https://github.com/gsd-build/get-shit-done), this plugin is my own take on structured AI-driven development. It adds multi-service orchestration, parallel agent teams, dual-model code review, and living design documents that survive context clears — giving you a repeatable workflow from idea to merged PR.
 
 ## Installation
 
@@ -210,7 +210,7 @@ Without `project.yml`, the plugin assumes:
 
 ## Plugin Hooks
 
-The plugin ships 4 opt-in hooks that improve orchestration quality during `/project:implement` sessions. **No hooks fire unless explicitly enabled** — missing config, missing dependencies (`jq`), or missing environment variables all result in silent no-ops.
+The plugin ships 3 opt-in hooks that improve orchestration quality during `/project:implement` sessions. **No hooks fire unless explicitly enabled** — missing config, missing dependencies (`jq`), or missing environment variables all result in silent no-ops.
 
 ### Configuration
 
@@ -219,7 +219,6 @@ Enable hooks in `.project-orchestrator/project.yml`:
 ```yaml
 # .project-orchestrator/project.yml
 hooks:
-  task_verification: "agent"    # "agent" | "prompt" | "off" (default: off)
   stop_guard: true              # default: false
   session_context: true         # default: false
   precompact_state: true        # default: false
@@ -227,20 +226,11 @@ hooks:
 
 | Key | Values | Default |
 |-----|--------|---------|
-| `hooks.task_verification` | `"agent"`, `"prompt"`, `"off"` | `"off"` |
 | `hooks.stop_guard` | `true`, `false` | `false` |
 | `hooks.session_context` | `true`, `false` | `false` |
 | `hooks.precompact_state` | `true`, `false` | `false` |
 
 ### Shipped Hooks
-
-#### TaskCompleted — Deliverable Verification
-
-Verifies that completed tasks actually match their spec in the design doc before accepting completion. Only fires during active `/project:implement` sessions.
-
-- **`"agent"` mode** — injects thorough verification context: checks files exist, commits were made, and spec requirements are met. Adds **30–120s per task**.
-- **`"prompt"` mode** — lightweight format check: confirms commit SHA, file list, and test results are present. Adds ~5s per task.
-- **When to enable:** Recommended for projects where spec compliance matters. Use `"agent"` for thoroughness, `"prompt"` for speed.
 
 #### Stop — Prevent Premature Session End
 
@@ -264,13 +254,11 @@ Before automatic context compaction, injects orchestration state (plan, team, pr
 
 | Hook | Overhead |
 |------|----------|
-| TaskCompleted (`"agent"`) | 30–120s per task completion |
-| TaskCompleted (`"prompt"`) | ~5s per task completion |
 | Stop guard | <1s |
 | SessionStart context | <1s |
 | PreCompact state | <1s |
 
-For a 6-task implementation with 3 parallel workers, agent-mode verification adds roughly 3–12 minutes total.
+All hooks are lightweight — total overhead is negligible.
 
 ### Scope Protection (Example)
 
