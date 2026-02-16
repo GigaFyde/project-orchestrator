@@ -6,11 +6,27 @@ check_deps() {
   command -v jq >/dev/null || { exit 0; }
 }
 
+# Resolve project root — handles git worktrees where $CLAUDE_PROJECT_DIR may be unset
+# Falls back to git common dir (always points to main repo's .git, even from worktrees)
+resolve_project_dir() {
+  if [ -n "$CLAUDE_PROJECT_DIR" ] && [ -d "${CLAUDE_PROJECT_DIR}/.claude" ]; then
+    echo "$CLAUDE_PROJECT_DIR"
+    return
+  fi
+  # Worktree fallback: derive main repo root from git common dir
+  local common_dir
+  common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  [ -n "$common_dir" ] || return 1
+  local root="${common_dir%/.git}"
+  [ -d "${root}/.claude" ] && echo "$root" || return 1
+}
+
 # Standard script preamble — call at top of every hook script
 hook_init() {
   check_deps
-  # Verify environment
-  [ -n "$CLAUDE_PROJECT_DIR" ] || exit 0
+  # Resolve project dir (handles worktrees)
+  CLAUDE_PROJECT_DIR=$(resolve_project_dir) || exit 0
+  export CLAUDE_PROJECT_DIR
   [ -n "$CLAUDE_PLUGIN_ROOT" ] || exit 0
 }
 
