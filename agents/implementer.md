@@ -27,7 +27,7 @@ On task start, use MCP tools for structured context, with manual fallbacks:
 
 ## Memory Management
 
-Your memory persists across sessions at `.claude/agent-memory/implementer/MEMORY.md`. All implementer agents share this file.
+Your memory persists across sessions at `.project-orchestrator/agent-memory/implementer/MEMORY.md`. All implementer agents share this file.
 
 **When to write memory:**
 - After discovering a non-obvious service quirk or gotcha
