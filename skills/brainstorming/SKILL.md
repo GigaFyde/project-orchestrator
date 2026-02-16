@@ -99,6 +99,7 @@ When status changes (standard structure), move the file to the matching director
 - **Commit:** {short sha}
 - **Spec review:** ✅ / ❌ {notes}
 - **Quality review:** ✅ / ❌ {notes}
+- **Recovery:** NO_CHANGES (attempt 1), STALLED (attempt 2)  ← optional, only when recovery occurred
 
 ## Decisions & Context
 {Key decisions, gotchas, patterns chosen — helps fresh agents after compaction}
