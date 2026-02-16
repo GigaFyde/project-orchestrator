@@ -1,6 +1,7 @@
 ---
 name: project:worktree
 description: Create an isolated git worktree for a plan — manual setup for parallel implementation or spike isolation
+skills: [project-orchestrator:worktree]
 ---
 
 <objective>
@@ -14,7 +15,6 @@ Use cases:
 
 <context>
 - Project config: @.project-orchestrator/project.yml
-- Worktree skill: @skills/worktree/SKILL.md
 </context>
 
 <process>

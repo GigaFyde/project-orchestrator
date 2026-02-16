@@ -3,6 +3,7 @@ name: project:finish
 description: Finish a branch — PR creation, multi-service ordering, changelog
 argument-hint: "[service name]"
 allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, AskUserQuestion]
+skills: [project-orchestrator:finishing-branch]
 ---
 
 <objective>
@@ -12,7 +13,6 @@ Branch finishing. Handles git repos, auto-deploy awareness, multi-service PR ord
 <context>
 - `$ARGUMENTS` — service name (optional, will detect from git/MCP status if omitted)
 - Project config: @.project-orchestrator/project.yml
-- Finishing skill: @skills/finishing-branch/SKILL.md
 </context>
 
 <process>
@@ -23,7 +23,7 @@ Branch finishing. Handles git repos, auto-deploy awareness, multi-service PR ord
    - Check git status across service directories: `cd <service> && git status && git branch --show-current`
    - Present findings and ask user which service(s) to finish
 
-3. Follow the finishing skill (loaded above) to handle branch finishing
+3. Follow the finishing skill (auto-loaded via frontmatter) to handle branch finishing
 4. If a service name was provided via `$ARGUMENTS`, start with that service
 
 ## After finishing
