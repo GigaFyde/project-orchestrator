@@ -4,20 +4,81 @@ Full-lifecycle project orchestration plugin for Claude Code. Turns feature ideas
 
 ## Installation
 
+### Via Marketplace (Recommended)
+
 Run this inside Claude Code to add the marketplace and install the plugin:
 
 ```
-/plugin marketplace add gigafyde/project-orchestrator
-/plugin install project-orchestrator@project-orchestrator
+/plugin marketplace add gigafyde/claude-marketplace
+/plugin install project-orchestrator@claude-marketplace
 ```
 
-**Private repo note:** This requires access to the GitHub repo. Your existing git credentials (e.g., `gh auth login`) are used automatically. For background auto-updates, set `GITHUB_TOKEN` or `GH_TOKEN` in your environment.
+### Direct Installation
+
+Alternatively, install directly from the plugin repository:
+
+```
+/plugin install gigafyde/project-orchestrator
+```
+
+Both methods work identically. The marketplace approach provides a central discovery point for multiple plugins.
 
 (Optional) Create `.project-orchestrator/project.yml` in your project to customize behavior — see [Project Config](#project-config) below. The plugin works without any config using sensible defaults.
 
-**Breaking change:** If you have an existing `.claude/project.yml` from a previous version, you must move it to `.project-orchestrator/project.yml`. The config file has moved as part of completing the dotfolder migration.
-
 **Recommended:** Add `.project-orchestrator/` to your `.gitignore` — it contains session-specific state (active plan tracker, scope files, review analytics, agent memory) that shouldn't be committed.
+
+## Quick Start
+
+Here's a minimal workflow to see the plugin in action:
+
+1. **Create a simple project config** (optional but recommended):
+
+```yaml
+# .project-orchestrator/project.yml
+name: my-project
+structure: monorepo
+services:
+  - name: api
+    path: ./
+```
+
+2. **Start brainstorming:**
+
+```
+/project:brainstorm Add user authentication with JWT tokens
+```
+
+Claude will explore your codebase, ask clarifying questions, and create a design document in `docs/plans/`.
+
+3. **Review the design doc** and when ready, implement it:
+
+```
+/project:implement
+```
+
+This spawns parallel implementer agents that work through the tasks defined in your design doc. Each agent:
+- Reads the task requirements
+- Implements the changes
+- Runs tests
+- Commits the work
+- Reports completion
+
+4. **Review the implementation:**
+
+```
+/project:review
+```
+
+This runs a two-stage review process: spec compliance first, then code quality (using parallel models for comprehensive coverage).
+
+5. **Verify and finish:**
+
+```
+/project:verify
+/project:finish
+```
+
+That's it! The plugin handles context management, parallelization, and state tracking across the entire lifecycle.
 
 ## Commands
 
@@ -26,6 +87,7 @@ Run this inside Claude Code to add the marketplace and install the plugin:
 | `/project:brainstorm` | Design phase — brainstorm and create a design document |
 | `/project:implement` | Implementation phase — spawn parallel workers from a design doc |
 | `/project:review` | Two-stage review — spec compliance + code quality |
+| `/project:review-design` | Review a design doc before implementation |
 | `/project:verify` | Evidence-based verification before claiming completion |
 | `/project:finish` | Branch finishing — merge, PR, or keep |
 | `/project:progress` | Check feature status and suggest next steps |
@@ -240,6 +302,39 @@ Every skill/command begins with:
 5. Ensure `plans_dir` exists (create if missing on write operations)
 6. Proceed with project-aware context
 
+## MCP Integration (Optional)
+
+This plugin optionally integrates with Model Context Protocol (MCP) tools for enhanced state management and coordination. **All MCP features have graceful fallbacks** — the plugin works 100% without MCP installed.
+
+### What MCP Provides
+
+When MCP tools are available, the plugin gains additional capabilities:
+
+- **State persistence** — design doc tracking, active plan state, and team coordination survive context clears
+- **Cross-agent coordination** — implementer agents can share state through structured MCP calls
+- **Scope management** — automatic scope file creation for permission hook integration
+- **Branch tracking** — worktree lifecycle management for parallel implementation isolation
+
+### MCP Tool Categories
+
+The plugin references these MCP tool categories (from Dev-MCP or compatible servers):
+
+- **State management** — `get_active_plan()`, `set_active_plan()`, `update_task_status()`
+- **Activity logging** — `log_activity()` for implementation progress tracking
+- **Scope management** — `create_scope()`, `delete_scope()` for auto-approve hook integration
+- **Branch tracking** — `track_branch()`, `untrack_branch()` for worktree coordination
+
+### Graceful Fallbacks
+
+When MCP tools are not available, the plugin uses file-based alternatives:
+
+- **State** → stored in `.project-orchestrator/state.json`
+- **Activity logs** → not persisted (ephemeral in-context only)
+- **Scopes** → manual creation or skipped
+- **Branch tracking** → manual worktree management
+
+No functionality is lost — MCP simply enhances the experience with better state persistence and coordination.
+
 ## Agents
 
 | Agent | Purpose | Model |
@@ -431,3 +526,20 @@ Review results are tracked in `.project-orchestrator/review-analytics.json` at t
 - High `common_issues` for a service -- add patterns to that service's CLAUDE.md
 
 The `/project:progress` command includes an analytics summary when the analytics file exists.
+
+## Migration
+
+### Config File Location Change
+
+If you have an existing `.claude/project.yml` from a previous version (before v1.3.0), you must move it to `.project-orchestrator/project.yml`. The config file has moved as part of completing the dotfolder migration.
+
+```bash
+# If you have the old location:
+mv .claude/project.yml .project-orchestrator/project.yml
+```
+
+This change aligns with Claude Code's plugin conventions and keeps plugin-specific files isolated from the core `.claude/` directory.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
