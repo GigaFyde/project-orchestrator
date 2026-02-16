@@ -44,6 +44,14 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
 Read task + living state doc + architecture docs (if configured) + service CLAUDE.md
   → Questions? Ask lead via SendMessage. Wait for answer.
   → Clear? Proceed:
+
+    **Do NOT plan.** Do NOT explore beyond what's required to implement your task.
+    The design doc is your spec. Read it, read your task description, read
+    referenced files, and explore existing patterns in your target service —
+    then implement. Do NOT propose approaches, compare alternatives, or gather
+    context beyond implementation needs. If the task is genuinely ambiguous,
+    ask the lead — don't explore your way to clarity.
+
     1. Explore existing patterns in the target service directory
     2. Implement exactly what the task specifies
     3. Run tests (see Testing section)
