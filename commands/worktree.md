@@ -1,6 +1,7 @@
 ---
 name: project:worktree
 description: Create an isolated git worktree for a plan — manual setup for parallel implementation or spike isolation
+allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, AskUserQuestion]
 skills: [project-orchestrator:worktree]
 ---
 

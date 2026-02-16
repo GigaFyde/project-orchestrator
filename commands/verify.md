@@ -1,6 +1,7 @@
 ---
 name: project:verify
 description: Verify completed work — evidence-based checks across all affected services
+allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion]
 skills: [project-orchestrator:verification]
 ---
 

@@ -2,6 +2,7 @@
 name: project:changelog
 description: Add standardized changelog entries to a service
 argument-hint: "[service name]"
+allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, AskUserQuestion]
 skills: [project-orchestrator:changelog]
 ---
 

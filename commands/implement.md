@@ -2,6 +2,7 @@
 name: project:implement
 description: Execute implementation from a design doc — creates team, spawns parallel workers, post-implementation review
 argument-hint: "[plan file path] [--no-review]"
+allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, Task, Skill, AskUserQuestion]
 ---
 
 <objective>
