@@ -32,11 +32,10 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
      Do NOT silently switch to the main tree (lead controls worktree routing).
 1. Read your assigned task from the team TaskList (`TaskGet` your task ID)
 2. Read the living state doc at the path provided in your task description
-3. Check for saved progress: `load_state(prefix: "implement-{slug}-task-{N}")` — resume if found
-4. Check target service git state: `cd <service> && git status && git branch --show-current`
-5. Read architecture docs if configured in `project.yml` (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
-6. Read the target service's CLAUDE.md for stack-specific patterns and conventions
-7. If anything is unclear — **ask the lead via SendMessage before starting**
+3. Check target service git state: `cd <service> && git status && git branch --show-current`
+4. Read architecture docs if configured in `project.yml` (`config.architecture_docs.agent`, `config.architecture_docs.domain`)
+5. Read the target service's CLAUDE.md for stack-specific patterns and conventions
+6. If anything is unclear — **ask the lead via SendMessage before starting**
 
 ## Implementation Flow
 
@@ -182,7 +181,7 @@ TaskUpdate(taskId: <your-task-id>, status: "completed", metadata: {
 })
 ```
 
-This must happen BEFORE SendMessage so that hooks (e.g., TaskCompleted verification) can read the metadata. The `design_doc` value is the living state doc path provided in your task prompt. This metadata is separate from MCP `save_state` — `save_state` is for mid-task checkpointing, metadata is for hook verification.
+This must happen BEFORE SendMessage so that hooks (e.g., TaskCompleted verification) can read the metadata. The `design_doc` value is the living state doc path provided in your task prompt.
 
 If blocked or needs clarification, use `status: "in_progress"` and skip metadata — just SendMessage the lead.
 
@@ -243,49 +242,6 @@ or service root:
 - **Another agent edited a file you need** → ask lead for coordination
 
 **When in doubt, message the lead. Don't guess.**
-
-## Dev-MCP Coordination (when MCP tools are available)
-
-All MCP calls below are optional resilience features. If any call fails or MCP is unavailable, skip it and continue — the core implementation workflow doesn't depend on MCP.
-
-### On Task Start
-1. Verify clean git state and correct branch: `cd <service> && git status && git branch --show-current`
-2. `load_state(prefix: "implement-{slug}-task-{N}")` → if resuming after compaction, restore progress
-   - If found: skip already-completed steps, resume from checkpoint
-   - If not found: fresh start
-3. `acquire_lock(files: [from task spec], agent_id: <your-team-name>, ttl_seconds: 600)`
-4. If denied → message lead with contested files, wait
-   - If MCP unavailable or `acquire_lock` fails, skip — proceed without lock. Optional resilience feature.
-5. `report_activity(action: "task_started", feature: <slug>, agent: <your-name>)`
-   - If MCP unavailable or call fails, skip — optional resilience feature.
-
-### Mid-Task Checkpoint
-After each significant milestone (e.g., new file created, tests pass), save progress:
-```
-save_state(key: "implement-{slug}-task-{N}", data: {
-  status: "in-progress",
-  files_created: [<list>],
-  files_modified: [<list>],
-  tests_passing: true/false,
-  current_step: "implementing controller",
-  decisions_made: [<key choices>]
-}, saved_by: <agent-name>)
-```
-If `save_state` unavailable, skip — this is a resilience optimization, not a requirement.
-
-### On Task Complete
-1. `release_lock(lock_id: <from acquire response>)`
-   - If MCP unavailable or call fails, skip — optional resilience feature.
-2. `report_activity(action: "task_completed", feature: <slug>, agent: <your-name>, details: {files_changed, commit})`
-   - If MCP unavailable or call fails, skip — optional resilience feature.
-3. `delete_state(key: "implement-{slug}-task-{N}")` — clean up, no longer needed
-   - If MCP unavailable or call fails, skip — optional resilience feature.
-
-### On Block/Error
-1. `release_lock(lock_id: <from acquire response>)` — don't hold locks while waiting
-   - If MCP unavailable or call fails, skip — optional resilience feature.
-2. `report_activity(action: "task_blocked", feature: <slug>, agent: <your-name>, details: {reason})`
-   - If MCP unavailable or call fails, skip — optional resilience feature.
 
 ## Related Commands
 
