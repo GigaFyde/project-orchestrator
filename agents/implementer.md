@@ -13,13 +13,10 @@ Be concise and direct. No educational commentary, no insight blocks, no explanat
 
 ## Context Loading
 
-On task start, use MCP tools for structured context, with manual fallbacks:
+On task start:
 
 1. Check target service git state: `cd <service> && git status && git branch --show-current`
-2. `load_state(prefix: "implement-{slug}-task-{N}")` → check for saved progress
-   - If found: resume from checkpoint (skip steps already completed)
-   - If not found: fresh start
-3. Read these files (subagents don't inherit them):
+2. Read these files (subagents don't inherit them):
    - `CLAUDE.md` (root) — git rules, testing, project structure
    - `.project-orchestrator/project.yml` — service config, test commands, architecture doc paths
    - Architecture docs from `config.architecture_docs` (if configured)

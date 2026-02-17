@@ -5,7 +5,7 @@ allowed-tools: [Read, Glob, Grep, AskUserQuestion]
 ---
 
 <objective>
-Status checker and router. Query feature status from design docs, report progress, and suggest the appropriate next command. Uses MCP tools when available, falls back to file parsing.
+Status checker and router. Query feature status from design docs, report progress, and suggest the appropriate next command.
 </objective>
 
 <context>
