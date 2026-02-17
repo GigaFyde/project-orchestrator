@@ -229,40 +229,7 @@ All report via TaskUpdate. Skip for single-service features.
   If "## Active" section exists, add the entry at the top of that section (newest first).
 - Present design to user
 
-## 11. Persist state and hand off (Dev-MCP)
-
-**After design doc is written, save rich state for cross-session recovery:**
-```
-save_state(key: "brainstorm-{slug}", data: {
-  status: "design_complete",
-  design_doc: "{plans_dir}/YYYY-MM-DD-{slug}-design.md",
-  services: [<affected services>],
-  key_decisions: [<list of key design decisions>],
-  tasks_total: N,
-  exploration_findings: [<key findings from explorers>],
-  gotchas: [<warnings for implementers>]
-}, saved_by: "brainstorm-lead")
-```
-
-**Hand off context to implement phase:**
-```
-agent_handoff(
-  from: "brainstorm-lead",
-  to: "implement-lead",
-  context: {
-    task: "implement feature",
-    design_doc: "{plans_dir}/YYYY-MM-DD-{slug}-design.md",
-    services: [<affected services>],
-    completed: ["brainstorm", "design"],
-    remaining: ["implementation", "review", "verify"],
-    gotchas: [<warnings for implementers>]
-  }
-)
-```
-
-**Fallback:** If MCP unavailable, skip both — the living state doc on disk is sufficient.
-
-## 12. Cleanup brainstorm team
+## 11. Cleanup brainstorm team
 
 - **Team path:** `TeamDelete("brainstorm-{slug}")`
 - Suggest user run `/clear` to free context
@@ -400,13 +367,6 @@ When breaking work into implementation tasks, **check if multiple tasks will edi
 | Code quality review needed | Invoke `project-orchestrator:quality-reviewer` skill (agent-only) |
 
 ---
-
-## Dev-MCP Coordination (when MCP tools are available)
-
-At each phase transition, report activity:
-- `report_activity(action: "started_brainstorm", feature: <slug>)`
-- `report_activity(action: "exploration_complete", feature: <slug>)`
-- `report_activity(action: "design_complete", feature: <slug>)`
 
 # Key Principles
 
