@@ -2,7 +2,7 @@
 name: project:review-design
 description: Review a design doc before implementation — parallel spec completeness + feasibility reviewers
 argument-hint: "[plan file path]"
-allowed-tools: [Read, Glob, Grep, Task]
+allowed-tools: [Read, Glob, Grep, Edit, Task, AskUserQuestion]
 ---
 
 <objective>

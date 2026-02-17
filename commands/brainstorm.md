@@ -2,7 +2,7 @@
 name: project:brainstorm
 description: Start the feature lifecycle — brainstorm and design phase
 argument-hint: "[feature description]"
-allowed-tools: [Read, Glob, Grep, Task, AskUserQuestion]
+allowed-tools: [Read, Glob, Grep, Edit, Write, Task, AskUserQuestion]
 skills: [project-orchestrator:brainstorming]
 ---
 

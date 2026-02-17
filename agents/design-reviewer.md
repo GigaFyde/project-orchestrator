@@ -2,7 +2,7 @@
 name: design-reviewer
 description: "Reviews design docs before implementation. Two stages: spec completeness (scenarios, edge cases, integration gaps) and feasibility (race conditions, failure modes, workflow)."
 model: sonnet
-memory: project
+allowed-tools: [Read, Glob, Grep]
 skills:
   - project-orchestrator:design-reviewer
 ---

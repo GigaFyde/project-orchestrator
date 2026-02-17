@@ -2,7 +2,7 @@
 name: project:review
 description: Review implementation against design doc — holistic diff-based spec + quality review
 argument-hint: "[plan file path]"
-allowed-tools: [Read, Glob, Grep, Task]
+allowed-tools: [Read, Glob, Grep, Bash, Edit, Write, Task, AskUserQuestion]
 ---
 
 <objective>
