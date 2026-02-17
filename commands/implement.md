@@ -21,20 +21,14 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    - Extract `review.strategy`, `review.parallel_models`, `review.single_model` for post-implementation review
 2. Read architecture docs if configured
 
-3. **Check for handoff and saved state (Dev-MCP)**
-   - Try `receive_handoff(agent_id: "implement-lead")` — if handoff exists from brainstorm phase, use context
-   - Try `load_state(prefix: "implement-{slug}")` — if saved state exists, resume from checkpoint
-   - **Fallback:** If MCP unavailable or no handoff/state found, proceed with file-based approach below
-
-4. **Find the design doc**
-   - If handoff provided design_doc path, use it
+3. **Find the design doc**
    - If a plan file path was provided in arguments, use it
    - Otherwise, check `{config.plans_dir}/INDEX.md` for active plans, or find `{config.plans_dir}/*-design.md`
    - If no design doc exists, tell the user: "No design doc found. Run `/project:brainstorm` first."
 
-5. **Parse the design doc** — extract feature name/slug, implementation tasks, dependencies, current status
+4. **Parse the design doc** — extract feature name/slug, implementation tasks, dependencies, current status
 
-5.5. **Check for overlapping active plans**
+4.5. **Check for overlapping active plans**
    - Check if current design doc already has a `## Worktree` / `## Worktrees` section
      - If yes: reuse existing worktree(s)
        - Verify they exist on disk via `git worktree list`
@@ -49,15 +43,15 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
        - Offer worktree isolation
        - If accepted: invoke `project-orchestrator:worktree` skill, record absolute path(s) in design doc
        - If declined: proceed without worktree (user accepts collision risk)
-   - Store worktree info (path or service→path map) for use in step 7
+   - Store worktree info (path or service→path map) for use in step 6
 
-5a. **Check for flags:**
+4a. **Check for flags:**
    - `--no-review` — if present, skip the post-implementation review pass entirely. Default: review enabled.
    - `--no-auto-resume` — if present, immediately escalate to user on any idle without completion (skip auto-resume). Default: auto-resume enabled.
 
-6. **Write orchestrator state file**
+5. **Write orchestrator state file**
    Write `.project-orchestrator/state.json` so hooks can find the active plan immediately when implementation starts.
-   - Build JSON with: `active_plan` (relative path to design doc), `slug`, `team` ("implement-{slug}"), `started` (ISO 8601 timestamp), `worktrees` (from step 5.5)
+   - Build JSON with: `active_plan` (relative path to design doc), `slug`, `team` ("implement-{slug}"), `started` (ISO 8601 timestamp), `worktrees` (from step 4.5)
    - Worktrees field structure:
      - Polyrepo: `{ "service-name": "/abs/path/to/worktree" }` per service
      - Monorepo: `{ "_all": "/abs/path/to/worktree" }`
@@ -66,27 +60,26 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    - Ensure `.project-orchestrator/` directory exists before writing
    - **If write fails:** Report error to user and exit — no cleanup needed (team doesn't exist yet)
 
-6a. **Create implementation team**
+5a. **Create implementation team**
    ```
    TeamCreate("implement-{slug}")
    ```
    - **If TeamCreate fails:**
-     - Delete `.project-orchestrator/state.json` (clean up the state file from step 6)
+     - Delete `.project-orchestrator/state.json` (clean up the state file from step 5)
      - Leave `.project-orchestrator/` directory intact (may be used by other files)
      - Report error to user, exit
 
-6b. **Create scope file for auto-approve hook**
+5b. **Create scope file for auto-approve hook**
    - Extract service names from design doc's "Services Affected"
    - For each service:
      - If config.services exists: look up service.path for the directory
      - If no config: use service name as relative path (monorepo default)
-     - If worktrees active (from step 5.5): use worktree paths instead of service paths
+     - If worktrees active (from step 4.5): use worktree paths instead of service paths
    - Build scope JSON matching the hook's expected schema:
      - `"shared"` array: all service directory paths (relative to project root)
-     - Per-agent keys added later when spawning workers (step 7) if task-specific scoping needed
+     - Per-agent keys added later when spawning workers (step 6) if task-specific scoping needed
    - Write `.project-orchestrator/scopes/{team-name}.json` via Write tool
    - Ensure `.project-orchestrator/scopes/` directory exists before writing
-   - Try MCP `create_scope(team, services, wave)` as optimization — but the Write approach above is the primary path
 
    Scope file format (must match scope-protection.sh expectations):
    ```json
@@ -96,7 +89,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    }
    ```
 
-   Per-agent scoping (optional, added during step 7 if tasks have specific file lists):
+   Per-agent scoping (optional, added during step 6 if tasks have specific file lists):
    ```json
    {
      "team": "{team-name}",
@@ -106,7 +99,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    }
    ```
 
-7. **Create tasks and spawn workers**
+6. **Create tasks and spawn workers**
    - Create TaskCreate entries with dependencies (addBlockedBy for dependent tasks)
    - Group independent tasks into waves (tasks with no unresolved blockers = same wave)
    - **Same-file collision detection:** Before spawning a wave, check if 2+ tasks edit the same file(s). If so:
@@ -134,7 +127,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    - Update living state doc: mark task as `in-progress`, set assignee
    - Wait for each wave to complete before starting the next
 
-8. **Handle task completion** — when an implementer reports via SendMessage:
+7. **Handle task completion** — when an implementer reports via SendMessage:
    - Update living state doc — mark task as `complete`, log implementer report
    - Check if blocked tasks are now unblocked, start next wave
    - **Task assignment messaging rules:**
@@ -216,7 +209,7 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
           3) Skip task and continue with next wave."
         - Wait for user decision before proceeding
 
-9. **Post-implementation review** (unless `--no-review`):
+8. **Post-implementation review** (unless `--no-review`):
 
    After ALL implementation tasks are complete, invoke the review skill:
    ```
@@ -228,8 +221,8 @@ Implementation team orchestrator. Read a design doc, create a team, spawn parall
    - If review finds egregious issues: offer to fix with user approval, then re-review
    - If review finds ambiguous issues: present to user for decision
 
-10. **Completion**
-   - Delete scope file (MCP `delete_scope` or skip)
+9. **Completion**
+   - Delete scope file: `rm -f .project-orchestrator/scopes/{team-name}.json`
    - TeamDelete("implement-{slug}")
    - Delete `.project-orchestrator/state.json` (clean up active plan marker now that implementation is done)
    - Update living state doc status to "complete"
