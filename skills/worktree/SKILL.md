@@ -259,16 +259,17 @@ When a service has no explicit `setup` in config and `config.worktree.auto_detec
 | Priority | File to Check | Setup Command |
 |----------|--------------|---------------|
 | 1 | `pnpm-lock.yaml` | `pnpm install` |
-| 2 | `yarn.lock` | `yarn install` |
-| 3 | `package-lock.json` | `npm install` |
-| 4 | `package.json` (no lockfile) | `npm install` |
-| 5 | `build.gradle.kts` or `build.gradle` | `./gradlew build` |
-| 6 | `Cargo.toml` | `cargo build` |
-| 7 | `go.mod` | `go mod download` |
-| 8 | `poetry.lock` | `poetry install` |
-| 9 | `uv.lock` | `uv sync` |
-| 10 | `requirements.txt` | `pip install -r requirements.txt` |
-| 11 | `pyproject.toml` (no lock) | `pip install -e .` |
+| 2 | `bun.lockb` | `bun install` |
+| 3 | `yarn.lock` | `yarn install` |
+| 4 | `package-lock.json` | `npm install` |
+| 5 | `package.json` (no lockfile) | `npm install` |
+| 6 | `build.gradle.kts` or `build.gradle` | `./gradlew build` |
+| 7 | `Cargo.toml` | `cargo build` |
+| 8 | `go.mod` | `go mod download` |
+| 9 | `poetry.lock` | `poetry install` |
+| 10 | `uv.lock` | `uv sync` |
+| 11 | `requirements.txt` | `pip install -r requirements.txt` |
+| 12 | `pyproject.toml` (no lock) | `pip install -e .` |
 
 Check these files inside the worktree's service directory (e.g., `{worktree_path}/{service_path}/`). If none match, skip setup for that service — no warning needed.
 
