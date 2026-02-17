@@ -1,5 +1,6 @@
 .DS_Store
 .obsidian/
+CLAUDE.md
 
 # Docs are local development artifacts, not distributed with the plugin
 docs/
