@@ -43,7 +43,6 @@ Review the full implementation diff against its design doc. Run spec + quality r
    Spawn all 4 reviewers in parallel:
    ```
    Task(spec-reviewer, model: config.review.parallel_models[0]):
-     Read the spec-reviewer skill
      Design doc: {path}
      Full diff: {git diff output}
      Changed files: {git diff --stat}
@@ -54,7 +53,6 @@ Review the full implementation diff against its design doc. Run spec + quality r
      (same prompt)
 
    Task(quality-reviewer, model: config.review.parallel_models[0]):
-     Read the quality-reviewer skill
      Design doc: {path}
      Full diff: {git diff output}
      Changed files: {git diff --stat}
