@@ -29,26 +29,26 @@ Check the living state doc for a `## Worktree` (monorepo) or `## Worktrees` (pol
 If neither section exists: skip to Step 1 (normal flow).
 
 **Monorepo (single worktree):**
-1. cd into worktree path (absolute path from design doc)
+1. Note the worktree path (absolute path from design doc)
 2. Before presenting options, rebase onto base branch:
    ```bash
-   git fetch origin
-   git rebase origin/{base-branch}
+   git -C {worktree-path} fetch origin
+   git -C {worktree-path} rebase origin/{base-branch}
    ```
 3. If rebase conflicts:
-   - Run `git rebase --abort` to restore clean state
+   - Run `git -C {worktree-path} rebase --abort` to restore clean state
    - Report the conflicted files to the user
    - Tell user:
      "Rebase has conflicts in: {file list}
      Options:
-     1. Resolve manually: cd {worktree-path}, run `git rebase origin/{base-branch}`,
-        fix conflicts, `git rebase --continue`, then re-run `/project:finish`
+     1. Resolve manually: run `git -C {worktree-path} rebase origin/{base-branch}`,
+        fix conflicts, `git -C {worktree-path} rebase --continue`, then re-run `/project:finish`
      2. Skip rebase and create PR as-is (GitHub will show conflicts)
      3. Keep the branch and handle it later"
    - Wait for user choice. Do NOT auto-resolve.
 4. After successful finish (Option 1 or 2):
-   - Verify worktree is clean: `cd {worktree-path} && git status --porcelain`
-   - If clean: `cd {project-root} && git worktree remove {worktree-path}`
+   - Verify worktree is clean: `git -C {worktree-path} status --porcelain`
+   - If clean: `git worktree remove {worktree-path}`
    - If dirty: warn user — "Worktree has uncommitted changes. Force remove, or clean up manually?"
      - Force: `git worktree remove --force {worktree-path}`
      - Manual: keep worktree, user handles it
@@ -59,8 +59,8 @@ If neither section exists: skip to Step 1 (normal flow).
 Process each service worktree from the `## Worktrees` table, in merge order
 (migrations → producers → consumers — same order as existing Step 6):
 1. For each service row in the table:
-   - cd into the service worktree path
-   - Rebase onto base branch: `git fetch origin && git rebase origin/{base-branch}`
+   - Note the service worktree path from the table
+   - Rebase onto base branch: `git -C {worktree-path} fetch origin && git -C {worktree-path} rebase origin/{base-branch}`
    - If rebase conflicts: same conflict handling as monorepo, but per-service.
      Other services can continue independently.
    - Present finish options per service (merge/PR/keep/discard)
@@ -85,9 +85,9 @@ Process each service worktree from the `## Worktrees` table, in merge order
 1. Call `list_branches(pattern: "feature/*")` → aggregate feature branches across all repos (if MCP available)
 2. For each affected service, check git state manually:
    ```bash
-   cd <service> && git branch --show-current
-   cd <service> && git status
-   cd <service> && git log --oneline -5
+   git -C <service> branch --show-current
+   git -C <service> status
+   git -C <service> log --oneline -5
    ```
 3. Present findings to user
 
@@ -139,16 +139,15 @@ Use `config.services[name].branch` for the base branch (default: `main`).
 ### Option 1: Merge Locally
 
 ```bash
-cd <service>
-git checkout <base-branch>   # from config.services[name].branch
-git pull
-git merge <feature-branch>
+git -C <service> checkout <base-branch>   # from config.services[name].branch
+git -C <service> pull
+git -C <service> merge <feature-branch>
 
-# Verify tests on merged result
-<test command>
+# Verify tests on merged result (run from service directory)
+(cd <service> && <test command>)
 
 # If tests pass
-git branch -d <feature-branch>
+git -C <service> branch -d <feature-branch>
 ```
 
 **Auto-deploy warning:** If `config.services[name].auto_deploy` is `true`:
@@ -161,17 +160,16 @@ Push now, or keep local?
 ### Option 2: Push and Create PR
 
 ```bash
-cd <service>
-git push -u origin <feature-branch>
+git -C <service> push -u origin <feature-branch>
 
-gh pr create --title "<title>" --body "$(cat <<'EOF'
+(cd <service> && gh pr create --title "<title>" --body "$(cat <<'EOF'
 ## Summary
 <2-3 bullets>
 
 ## Test Plan
 - [ ] <verification steps>
 EOF
-)"
+)")
 ```
 
 **Never force push** — teammates may be working on the same repos.
@@ -192,9 +190,8 @@ Type 'discard' to confirm.
 
 Wait for exact confirmation. Then:
 ```bash
-cd <service>
-git checkout <base-branch>
-git branch -D <feature-branch>
+git -C <service> checkout <base-branch>
+git -C <service> branch -D <feature-branch>
 ```
 
 ---
