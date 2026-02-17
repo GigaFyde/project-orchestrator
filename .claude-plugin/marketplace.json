@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "project-orchestrator",
-      "version": "1.5.5",
+      "version": "1.5.6",
       "source": "./",
       "description": "Ship multi-service features without losing context. Orchestrates parallel agent teams from brainstorming with multi-perspective design through wave-based implementation and dual-model code review — all coordinated via living design docs."
     }
