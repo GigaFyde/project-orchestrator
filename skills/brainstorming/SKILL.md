@@ -101,6 +101,9 @@ When status changes (standard structure), move the file to the matching director
 - **Quality review:** ✅ / ❌ {notes}
 - **Recovery:** NO_CHANGES (attempt 1), STALLED (attempt 2)  ← optional, only when recovery occurred
 
+## Test Plan              ← optional, added during brainstorming if UI feature has browser tests
+## Test Results           ← optional, filled by /project:test
+
 ## Decisions & Context
 {Key decisions, gotchas, patterns chosen — helps fresh agents after compaction}
 ```
@@ -195,6 +198,59 @@ For each perspective:
 Each produces a proposal via TaskUpdate. Lead synthesizes one recommendation.
 
 **Simple path:** Propose 2-3 approaches with trade-offs. Lead with recommended option.
+
+## 8a. Test plan generation (optional)
+
+If the feature includes UI changes, ask: "Do you want to define browser test scenarios for this feature?"
+
+- If no: skip — user can add test scenarios later or not at all
+- For non-UI features: skip this step (browser tests don't apply)
+- If yes: run the **test reconnaissance** phase before writing scenarios:
+
+**Step 1 — Route discovery:**
+Grep the codebase for route definitions relevant to the designed feature:
+- React Router: `path=`, `Route`, `createBrowserRouter`
+- Next.js: `app/` directory structure, `page.tsx` files
+- Vue Router: `routes:`, `path:`
+- Other frameworks: ask user for routing convention
+
+Document discovered routes in `### App Context` section of the test plan.
+
+**Step 2 — Authentication analysis:**
+Search for auth patterns in the codebase:
+- Login pages/components (grep for "login", "signin", "auth")
+- Auth middleware/guards (session checks, JWT verification, protected routes)
+- Test credentials (seed scripts, fixtures, `.env.example`, test helpers)
+- Session mechanism (cookies, localStorage tokens, auth headers)
+
+Ask user to confirm findings and provide test credentials if not found in code. Document in `### Authentication` section.
+
+**Step 3 — Page structure recon (if app is running):**
+Ask user: "Is the app running? I can take snapshots of key pages to understand the UI structure."
+- If yes: use Chrome DevTools MCP to `navigate_page` + `take_snapshot` on each relevant route
+  - Capture form fields (input names, labels, placeholders)
+  - Capture navigation elements (links, buttons, menus)
+  - Capture content areas (headings, lists, data displays)
+  - Document element selectors/labels that test scenarios should target
+- If no: derive UI structure from component code (read relevant component files)
+  - Look for form field names, button text, heading content
+  - Less reliable but still useful for writing scenarios
+
+**Step 4 — Generate test scenarios:**
+Using the reconnaissance findings, generate concrete scenarios with:
+- Real URLs from route discovery (not placeholder paths)
+- Real form field labels/names from page structure recon
+- Real auth flow from authentication analysis
+- Scenarios: happy path first, then key error cases, then edge cases
+- Each scenario references actual elements discovered (e.g., "Fill the 'Email address' input" not "Fill email field")
+
+**Step 5 — Prerequisites and setup:**
+Document what's needed before `/project:test` can run:
+- App start command (from package.json scripts, Makefile, docker-compose)
+- Seed data requirements (from seed scripts or fixtures found)
+- Environment variables needed (from `.env.example` or config files)
+
+Write the complete `## Test Plan` section in the living state doc using the test plan template (see Design Templates below).
 
 ## 9. Contract verification (cross-service only, team path)
 
@@ -301,6 +357,21 @@ All report via TaskUpdate. Skip for single-service features.
 ```
 
 Check the target service's CLAUDE.md for stack-specific design patterns and conventions.
+
+### For Browser Test Scenarios
+
+```markdown
+#### T{N} — {Scenario title}
+**Precondition:** {Prior scenario state or "none — self-contained"}
+**Setup:** {Navigation/login steps if self-contained}
+**Steps:**
+1. {Action — navigate, click, fill, etc.}
+2. {Action}
+
+**Expected:**
+- {Visible element, text, URL, or state}
+- {Another expected outcome}
+```
 
 ---
 
