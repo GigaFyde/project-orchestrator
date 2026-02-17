@@ -127,15 +127,15 @@ Review the full implementation diff against its design doc. Run spec + quality r
    | Category | Severity | Details |
    |----------|----------|---------|
    | Agreed | {severity} | {summary with file:line} |
-   | Sonnet-only | {severity} | {summary with file:line} |
-   | Haiku-only | {severity} | {summary with file:line} |
+   | {Model-B}-only | {severity} | {summary with file:line} |
+   | {Model-A}-only | {severity} | {summary with file:line} |
 
    ### Quality Findings
    | Category | Severity | Details |
    |----------|----------|---------|
    | Agreed | {severity} | {summary with file:line} |
-   | Sonnet-only | {severity} | {summary with file:line} |
-   | Haiku-only | {severity} | {summary with file:line} |
+   | {Model-B}-only | {severity} | {summary with file:line} |
+   | {Model-A}-only | {severity} | {summary with file:line} |
    ```
 
    For `single` strategy, show findings as a flat list (no category columns).
